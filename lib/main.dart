@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
+import 'package:qr_flutter/qr_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
 // Global Theme Notifier for System/Light/Dark mode
 final ValueNotifier<ThemeMode> themeNotifier = ValueNotifier(ThemeMode.system);
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(statusBarColor: Colors.transparent),
   );
@@ -28,14 +32,12 @@ class KidlyApp extends StatelessWidget {
             brightness: Brightness.light,
             primaryColor: const Color(0xFF6B52D9),
             scaffoldBackgroundColor: Colors.white,
-            fontFamily: '.SF UI Display', // iOS feel default
             useMaterial3: true,
           ),
           darkTheme: ThemeData(
             brightness: Brightness.dark,
             primaryColor: const Color(0xFF6B52D9),
             scaffoldBackgroundColor: const Color(0xFF121212),
-            fontFamily: '.SF UI Display',
             useMaterial3: true,
           ),
           home: const MainNavigationScreen(),
@@ -58,7 +60,6 @@ class MainNavigationScreen extends StatefulWidget {
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
   int _currentIndex = 0;
 
-  // All Dummy Pages connected here
   final List<Widget> _pages = [
     const HomePage(),
     const DummyPage(title: 'Relax', icon: Icons.spa),
@@ -97,7 +98,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 }
 
 // ==========================================
-// 2. HOME PAGE (Screenshot 1)
+// 2. HOME PAGE
 // ==========================================
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -120,7 +121,6 @@ class HomePage extends StatelessWidget {
           ),
         ),
         actions: [
-          // Dark/Light Mode Switch
           Row(
             children: [
               Icon(isDark ? Icons.dark_mode : Icons.light_mode, color: isDark ? Colors.white : Colors.black, size: 20),
@@ -134,9 +134,11 @@ class HomePage extends StatelessWidget {
             ],
           ),
           const SizedBox(width: 8),
+          // LOCAL ASSET IMAGE HERE
           const CircleAvatar(
             radius: 16,
-            backgroundImage: NetworkImage('https://i.pravatar.cc/150?img=5'), // Dummy User
+            backgroundImage: AssetImage('assets/profile.jpg'), // Ensure this file is in assets folder
+            backgroundColor: Colors.grey, // Fallback color
           ),
           const SizedBox(width: 16),
         ],
@@ -147,7 +149,7 @@ class HomePage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 10),
-            // Go Premium Button
+            // Go Premium Button (Fixed Icon)
             InkWell(
               onTap: () {
                 Navigator.push(context, CupertinoPageRoute(builder: (_) => const PremiumPaymentPage()));
@@ -165,7 +167,7 @@ class HomePage extends StatelessWidget {
                 child: const Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(CupertinoIcons.crown, color: Colors.white),
+                    Icon(Icons.workspace_premium, color: Colors.white), // FIXED ICON
                     SizedBox(width: 8),
                     Text('Go Premium', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
                   ],
@@ -173,7 +175,6 @@ class HomePage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 20),
-            // Search Bar
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               decoration: BoxDecoration(
@@ -189,14 +190,13 @@ class HomePage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 24),
-            // Category Section
             Text('NATURE AND OUR WORLD', style: TextStyle(color: Colors.teal[300], fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1)),
             const SizedBox(height: 4),
             Text('An innocent wish...', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: isDark ? Colors.white : const Color(0xFF4A4A68))),
             Text('Could it lead to great turmoil?', style: TextStyle(fontSize: 16, color: Colors.grey[500])),
             const SizedBox(height: 16),
             
-            // Zozo's Wish Card
+            // LOCAL ASSET CARD
             GestureDetector(
               onTap: () {
                 Navigator.push(context, CupertinoPageRoute(builder: (_) => const BookDetailsPage()));
@@ -206,33 +206,24 @@ class HomePage extends StatelessWidget {
                 width: double.infinity,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(20),
+                  color: Colors.purple.withOpacity(0.6),
                   image: const DecorationImage(
-                    image: NetworkImage('https://img.freepik.com/free-vector/space-background-with-stars-planets_107791-3046.jpg'), // Dummy bg
+                    image: AssetImage('assets/book_bg.jpg'), // Local Asset
                     fit: BoxFit.cover,
                   ),
                 ),
                 child: Stack(
                   children: [
-                    Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20),
-                        color: Colors.purple.withOpacity(0.6), // Overlay
-                      ),
+                    Container(decoration: BoxDecoration(borderRadius: BorderRadius.circular(20), color: Colors.black26)),
+                    const Positioned(
+                      top: 20, left: 20,
+                      child: Text("Zozo's\nWish", style: TextStyle(fontSize: 36, fontWeight: FontWeight.w900, color: Colors.white)),
                     ),
                     Positioned(
-                      top: 20,
-                      left: 20,
-                      child: Text("Zozo's\nWish", style: TextStyle(fontSize: 36, fontWeight: FontWeight.w900, color: Colors.orange[200], fontFamily: 'Comic Sans MS')),
-                    ),
-                    Positioned(
-                      bottom: 20,
-                      left: 20,
+                      bottom: 20, left: 20,
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF38B6FF),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
+                        decoration: BoxDecoration(color: const Color(0xFF38B6FF), borderRadius: BorderRadius.circular(20)),
                         child: const Text('EXPLORE', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                       ),
                     )
@@ -240,16 +231,12 @@ class HomePage extends StatelessWidget {
                 ),
               ),
             ),
-            
             const SizedBox(height: 24),
-            // Badge Board Card
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(20),
-                gradient: const LinearGradient(
-                  colors: [Color(0xFFD946EF), Color(0xFF8B5CF6)],
-                ),
+                gradient: const LinearGradient(colors: [Color(0xFFD946EF), Color(0xFF8B5CF6)]),
               ),
               child: Row(
                 children: [
@@ -269,7 +256,7 @@ class HomePage extends StatelessWidget {
                       ],
                     ),
                   ),
-                  const Icon(CupertinoIcons.rosette, color: Colors.amber, size: 60),
+                  const Icon(Icons.workspace_premium, color: Colors.amber, size: 60), // FIXED ICON
                 ],
               ),
             ),
@@ -282,7 +269,7 @@ class HomePage extends StatelessWidget {
 }
 
 // ==========================================
-// 3. BOOK DETAILS PAGE (Screenshot 2)
+// 3. BOOK DETAILS PAGE
 // ==========================================
 class BookDetailsPage extends StatelessWidget {
   const BookDetailsPage({super.key});
@@ -296,35 +283,28 @@ class BookDetailsPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Top Cover Image area
             Stack(
               children: [
                 Container(
                   height: 350,
                   width: double.infinity,
                   color: Colors.orange[300],
-                  child: Image.network(
-                    'https://img.freepik.com/free-vector/cute-giraffe-character-cartoon-vector-illustration_138676-3200.jpg',
-                    fit: BoxFit.cover,
-                  ),
+                  // LOCAL ASSET IMAGE HERE
+                  child: Image.asset('assets/cover.jpg', fit: BoxFit.cover, errorBuilder: (context, error, stackTrace) {
+                     return const Center(child: Text('Image missing in assets/', style: TextStyle(color: Colors.white)));
+                  }),
                 ),
                 Positioned(
-                  top: 50,
-                  left: 16,
+                  top: 50, left: 16,
                   child: InkWell(
                     onTap: () => Navigator.pop(context),
-                    child: const CircleAvatar(
-                      backgroundColor: Colors.white70,
-                      child: Icon(Icons.arrow_back_ios_new, color: Colors.black, size: 20),
-                    ),
+                    child: const CircleAvatar(backgroundColor: Colors.white70, child: Icon(Icons.arrow_back_ios_new, color: Colors.black, size: 20)),
                   ),
                 ),
               ],
             ),
-            
-            // Settings Bar
             Container(
-              color: const Color(0xFFFBBF24), // Orange/Yellow bar
+              color: const Color(0xFFFBBF24),
               padding: const EdgeInsets.symmetric(vertical: 16),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -335,10 +315,7 @@ class BookDetailsPage extends StatelessWidget {
                 ],
               ),
             ),
-            
             const SizedBox(height: 16),
-            
-            // Start Reading Button
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: ElevatedButton(
@@ -353,10 +330,7 @@ class BookDetailsPage extends StatelessWidget {
                 child: const Text('Start Reading', style: TextStyle(fontSize: 20, color: Colors.white, fontWeight: FontWeight.bold)),
               ),
             ),
-            
             const SizedBox(height: 24),
-            
-            // Action Icons
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
@@ -365,8 +339,6 @@ class BookDetailsPage extends StatelessWidget {
                 _buildActionIcon(CupertinoIcons.heart, 'Like', isDark),
               ],
             ),
-            
-            // Description Text
             Padding(
               padding: const EdgeInsets.all(24.0),
               child: Column(
@@ -428,7 +400,7 @@ class BookDetailsPage extends StatelessWidget {
 }
 
 // ==========================================
-// 4. READING PAGE (Screenshot 3)
+// 4. READING PAGE
 // ==========================================
 class ReadingPage extends StatelessWidget {
   const ReadingPage({super.key});
@@ -436,42 +408,36 @@ class ReadingPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFE28B5E), // Background matching the story theme
+      backgroundColor: const Color(0xFFE28B5E),
       body: Stack(
         children: [
-          // Background Image (Dummy Safari)
+          // LOCAL ASSET IMAGE HERE
           Positioned.fill(
-            child: Image.network(
-              'https://img.freepik.com/free-vector/jungle-safari-scene-with-wild-animals_1308-48281.jpg',
+            child: Image.asset(
+              'assets/reading_bg.jpg', 
               fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) => Container(color: Colors.orange[200]),
             ),
           ),
-          
           SafeArea(
             child: Column(
               children: [
-                // Top Bar overlay
                 Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      InkWell(
-                        onTap: () => Navigator.pop(context),
-                        child: const Icon(Icons.close, color: Colors.black, size: 30),
-                      ),
+                      InkWell(onTap: () => Navigator.pop(context), child: const Icon(Icons.close, color: Colors.black, size: 30)),
                       const Icon(Icons.menu, color: Colors.black, size: 30),
                     ],
                   ),
                 ),
-                
-                // Text Bubble
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 10),
                   child: Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFBE385), // Yellow Bubble
+                      color: const Color(0xFFFBE385),
                       borderRadius: BorderRadius.circular(30),
                       boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 10, offset: Offset(0, 5))],
                     ),
@@ -492,47 +458,64 @@ class ReadingPage extends StatelessWidget {
 }
 
 // ==========================================
-// 5. PREMIUM PAYMENT PAGE (QR Code integration)
+// 5. PREMIUM PAYMENT PAGE (QR, UPI INTENT, WEBVIEW)
 // ==========================================
-class PremiumPaymentPage extends StatelessWidget {
+class PremiumPaymentPage extends StatefulWidget {
   const PremiumPaymentPage({super.key});
+
+  @override
+  State<PremiumPaymentPage> createState() => _PremiumPaymentPageState();
+}
+
+class _PremiumPaymentPageState extends State<PremiumPaymentPage> {
+  final String upiId = "paynearby.8406962570@indus";
+  late String upiUrl;
+
+  @override
+  void initState() {
+    super.initState();
+    upiUrl = "upi://pay?pa=$upiId&pn=Kidly%20Premium&cu=INR";
+  }
+
+  // UPI Intent Function using url_launcher
+  Future<void> _launchUPIApp() async {
+    final Uri uri = Uri.parse(upiUrl);
+    try {
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        _showError("No UPI app found on your phone.");
+      }
+    } catch (e) {
+      _showError("Failed to open UPI app.");
+    }
+  }
+
+  void _showError(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+  }
 
   @override
   Widget build(BuildContext context) {
     bool isDark = Theme.of(context).brightness == Brightness.dark;
-    
-    // Auto Generate QR from the provided UPI ID using an API
-    String upiId = "paynearby.8406962570@indus";
-    String upiUrl = Uri.encodeComponent("upi://pay?pa=$upiId&pn=Kidly Premium");
-    String qrImageUrl = "https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=$upiUrl";
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Go Premium'),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-      ),
-      body: Center(
+      appBar: AppBar(title: const Text('Go Premium'), backgroundColor: Colors.transparent, elevation: 0),
+      body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(CupertinoIcons.crown_fill, color: Colors.amber, size: 80),
+              const Icon(Icons.workspace_premium, color: Colors.amber, size: 80), // FIXED ICON
               const SizedBox(height: 20),
-              Text(
-                'Unlock All Features!',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black87),
-              ),
+              Text('Unlock All Features!', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black87)),
               const SizedBox(height: 10),
-              const Text(
-                'Scan the QR Code below from any UPI App (GPay, PhonePe, Paytm) to activate Premium manually.',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 16, color: Colors.grey),
-              ),
-              const SizedBox(height: 40),
+              const Text('Scan the QR Code below from any UPI App to activate Premium manually.', textAlign: TextAlign.center, style: TextStyle(fontSize: 16, color: Colors.grey)),
+              const SizedBox(height: 30),
               
-              // QR Code Box
+              // OFFLINE QR CODE GENERATOR (using qr_flutter package)
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
@@ -540,22 +523,44 @@ class PremiumPaymentPage extends StatelessWidget {
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 10, spreadRadius: 2)],
                 ),
-                child: Image.network(
-                  qrImageUrl,
-                  height: 200,
-                  width: 200,
-                  loadingBuilder: (context, child, loadingProgress) {
-                    if (loadingProgress == null) return child;
-                    return const SizedBox(
-                      height: 200, width: 200,
-                      child: Center(child: CircularProgressIndicator()),
-                    );
-                  },
+                child: QrImageView(
+                  data: upiUrl,
+                  version: QrVersions.auto,
+                  size: 200.0,
+                  backgroundColor: Colors.white,
                 ),
               ),
-              
               const SizedBox(height: 20),
               Text('UPI ID: $upiId', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              
+              const SizedBox(height: 40),
+
+              // PAY VIA INSTALLED UPI APPS (Intent)
+              ElevatedButton.icon(
+                onPressed: _launchUPIApp,
+                icon: const Icon(Icons.phone_android, color: Colors.white),
+                label: const Text('Pay via installed UPI App', style: TextStyle(color: Colors.white, fontSize: 16)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF6B52D9),
+                  minimumSize: const Size(double.infinity, 50),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              // OPEN WEBVIEW PAGE
+              OutlinedButton.icon(
+                onPressed: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => const WebViewScreen()));
+                },
+                icon: Icon(Icons.language, color: isDark ? Colors.white : Colors.black),
+                label: Text('Open Terms via Webview', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 16)),
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size(double.infinity, 50),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+              ),
             ],
           ),
         ),
@@ -565,7 +570,37 @@ class PremiumPaymentPage extends StatelessWidget {
 }
 
 // ==========================================
-// 6. DUMMY PAGE (For Navigation Tabs)
+// 6. WEBVIEW SCREEN (Using webview_flutter)
+// ==========================================
+class WebViewScreen extends StatefulWidget {
+  const WebViewScreen({super.key});
+
+  @override
+  State<WebViewScreen> createState() => _WebViewScreenState();
+}
+
+class _WebViewScreenState extends State<WebViewScreen> {
+  late final WebViewController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = WebViewController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..loadRequest(Uri.parse('https://flutter.dev')); // Dummy URL, replace with your own
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Webview Page')),
+      body: WebViewWidget(controller: _controller),
+    );
+  }
+}
+
+// ==========================================
+// 7. DUMMY PAGE
 // ==========================================
 class DummyPage extends StatelessWidget {
   final String title;
@@ -584,7 +619,7 @@ class DummyPage extends StatelessWidget {
             const SizedBox(height: 20),
             Text('$title Page', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
             const SizedBox(height: 10),
-            const Text('Ye ek dummy page hai. Code modify karke apna design lagayein.', textAlign: TextAlign.center),
+            const Text('Ye ek dummy page hai.', textAlign: TextAlign.center),
           ],
         ),
       ),
