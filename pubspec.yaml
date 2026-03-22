@@ -1,5 +1,5 @@
 name: kidly_clone
-description: "A complete Flutter project with Assets, UPI, QR Code, and Webview."
+description: "Kidly Clone App"
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -10,15 +10,13 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.6
-  
-  # QR Code Generate karne ke liye
   qr_flutter: ^4.1.0
-  
-  # UPI Intent ya kisi bhi external app/browser ko open karne ke liye
   url_launcher: ^6.2.5
-  
-  # In-app browser / Website dikhane ke liye
   webview_flutter: ^4.7.0
+  # Theme state save rakhne ke liye
+  shared_preferences: ^2.2.2
+  # Text ko audio me padhne ke liye
+  flutter_tts: ^3.8.3
 
 dev_dependencies:
   flutter_test:
@@ -27,7 +25,5 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
-
-  # Yaha se aapka 'assets' folder connect hoga
   assets:
     - assets/
