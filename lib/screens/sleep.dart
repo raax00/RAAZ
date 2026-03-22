@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-class RelaxPage extends StatelessWidget {
-  const RelaxPage({super.key});
+class SleepPage extends StatelessWidget {
+  const SleepPage({super.key});
 
   @override
   Widget build(BuildContext context) {
