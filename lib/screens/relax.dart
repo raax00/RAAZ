@@ -5,6 +5,15 @@ class RelaxPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(body: Center(child: Text('Relax Page (Backend Ready)', style: TextStyle(fontSize: 24))));
+    bool isDark = Theme.of(context).brightness == Brightness.dark;
+    return Scaffold(
+      appBar: AppBar(title: const Text('Relax')),
+      body: Center(
+        child: Text(
+          'Relax Page (Backend Ready)', 
+          style: TextStyle(fontSize: 24, color: isDark ? Colors.white : Colors.black87)
+        )
+      )
+    );
   }
 }
