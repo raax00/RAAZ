@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+// NOTE: Apni paths ke hisab se adjust kar lein
+import '../main.dart'; // Make sure themeNotifier is defined here
+import 'payment.dart'; // Aapka payment screen
+
 // ==================== MODELS ====================
 
 class PopularityPackage {
@@ -24,22 +28,6 @@ class PopularityPackage {
   });
 }
 
-class PopularityExchange {
-  final String title;
-  final String description;
-  final int requiredPopularity;
-  final String reward;
-  final IconData icon;
-
-  PopularityExchange({
-    required this.title,
-    required this.description,
-    required this.requiredPopularity,
-    required this.reward,
-    required this.icon,
-  });
-}
-
 // ==================== HOME PAGE ====================
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -55,12 +43,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   late Animation<Offset> _slideAnimation;
 
   final double _walletBalance = 0.00;
-  int _userPopularity = 3420;
+  final int _userPopularity = 3420;
 
-  // Admin Details
+  // Admin Details for Support
   final String adminPhone = "918406962570";
   final String adminEmail = "raaxbhaii@gmail.com";
-  final String adminUpiId = "rajaowner@ybl"; // Change this to your real UPI ID
 
   final List<PopularityPackage> _popularityPackages = [
     PopularityPackage(
@@ -88,23 +75,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       price: 999,
       icon: Icons.flight,
       isPremium: true,
-    ),
-  ];
-
-  final List<PopularityExchange> _exchangeOffers = [
-    PopularityExchange(
-      title: 'UC Bonus Pack',
-      description: 'Get 600 UC + 100 Bonus',
-      requiredPopularity: 500,
-      reward: '600 UC',
-      icon: CupertinoIcons.gift,
-    ),
-    PopularityExchange(
-      title: 'Name Change Card',
-      description: 'Change your in-game name',
-      requiredPopularity: 800,
-      reward: '1x Card',
-      icon: CupertinoIcons.pencil_circle,
     ),
   ];
 
@@ -159,6 +129,16 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     }
   }
 
+  void _showSnackbar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: isDark ? Colors.grey[800] : Colors.grey[900],
+      ),
+    );
+  }
+
   // ==================== UI BUILDERS ====================
 
   PreferredSizeWidget _buildAppBar() {
@@ -178,42 +158,53 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         ),
       ),
       actions: [
-        // Wallet Button
-        GestureDetector(
-          onTap: () => _showTopUpDialog(),
-          child: Container(
-            margin: const EdgeInsets.only(right: 16),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFFF9A826), Color(0xFFE23E57)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+        // Dark/Light Theme Switch
+        Container(
+          margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+          decoration: BoxDecoration(
+            color: isDark ? Colors.grey[800] : Colors.grey[200],
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Row(
+            children: [
+              const SizedBox(width: 8),
+              Icon(isDark ? CupertinoIcons.moon_fill : CupertinoIcons.sun_max_fill,
+                  color: isDark ? Colors.amber : Colors.orange, size: 16),
+              Switch(
+                value: isDark,
+                activeColor: const Color(0xFFE23E57),
+                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                onChanged: (value) {
+                  // Apne main.dart ke hisab se ise adjust karein
+                  themeNotifier.value = value ? ThemeMode.dark : ThemeMode.light;
+                },
               ),
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFFE23E57).withOpacity(0.4),
-                  blurRadius: 8,
-                  offset: const Offset(0, 4),
-                )
-              ],
+            ],
+          ),
+        ),
+        // Wallet Button
+        Container(
+          margin: const EdgeInsets.only(right: 16, top: 10, bottom: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFFF9A826), Color(0xFFE23E57)],
             ),
-            child: Row(
-              children: [
-                const Icon(CupertinoIcons.plus_app_fill,
-                    color: Colors.white, size: 16),
-                const SizedBox(width: 6),
-                Text(
-                  '₹${_walletBalance.toStringAsFixed(0)}',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Row(
+            children: [
+              const Icon(CupertinoIcons.plus_app_fill, color: Colors.white, size: 16),
+              const SizedBox(width: 6),
+              Text(
+                '₹${_walletBalance.toStringAsFixed(0)}',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ],
@@ -222,34 +213,34 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   Widget _buildPopularityCard() {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [Color(0xFF667eea), Color(0xFF764ba2)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF764ba2).withOpacity(0.4),
-            blurRadius: 12,
-            offset: const Offset(0, 6),
+            color: const Color(0xFF764ba2).withOpacity(0.3),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
           )
         ],
       ),
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: Colors.white.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(16),
             ),
             child: const Icon(CupertinoIcons.star_fill,
-                color: Colors.amber, size: 28),
+                color: Colors.amber, size: 32),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 20),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -258,39 +249,23 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   'Your Total Popularity',
                   style: TextStyle(
                     color: Colors.white.withOpacity(0.9),
-                    fontSize: 13,
+                    fontSize: 14,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
                 const SizedBox(height: 4),
-                Row(
-                  children: [
-                    Text(
-                      '$_userPopularity',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                  ],
+                Text(
+                  '$_userPopularity',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 28,
+                    fontWeight: FontWeight.w900,
+                  ),
                 ),
               ],
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildSectionTitle(String title) {
-    return Text(
-      title,
-      style: TextStyle(
-        color: isDark ? Colors.white : Colors.black87,
-        fontSize: 18,
-        fontWeight: FontWeight.w800,
-        letterSpacing: 0.5,
       ),
     );
   }
@@ -312,14 +287,14 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               end: Alignment.bottomRight,
             ),
             border: Border.all(
-              color: isDark ? Colors.grey[700]! : Colors.grey[200]!,
-              width: 1,
+              color: isDark ? Colors.grey[800]! : Colors.grey[200]!,
+              width: 1.5,
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: 15,
-                offset: const Offset(0, 8),
+                color: Colors.black.withOpacity(0.04),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
               )
             ],
           ),
@@ -334,8 +309,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: package.isPremium
-                          ? [Colors.amber.shade700, Colors.orange.shade600]
-                          : [Colors.blue.shade400, Colors.indigo.shade600],
+                          ? [Colors.amber.shade600, Colors.orange.shade500]
+                          : [Colors.blue.shade400, Colors.indigo.shade500],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
@@ -386,17 +361,25 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                               ),
                             ],
                           ),
+                          // BUY BUTTON -> GOES TO CHECKOUT PAGE
                           ElevatedButton(
-                            onPressed: () => _showPurchaseDialog(package),
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                CupertinoPageRoute(
+                                  builder: (context) => CheckoutPage(package: package),
+                                ),
+                              );
+                            },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFFE23E57),
                               foregroundColor: Colors.white,
                               padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 8,
+                                horizontal: 20,
+                                vertical: 10,
                               ),
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
+                                borderRadius: BorderRadius.circular(12),
                               ),
                               elevation: 0,
                             ),
@@ -404,7 +387,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                               'Buy ₹${package.price.toStringAsFixed(0)}',
                               style: const TextStyle(
                                 fontWeight: FontWeight.w800,
-                                fontSize: 13,
+                                fontSize: 14,
                               ),
                             ),
                           ),
@@ -426,44 +409,34 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Colors.grey[900]!, Colors.black87],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        color: isDark ? Colors.grey[900] : Colors.grey[100],
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.grey[800]!),
+        border: Border.all(color: isDark ? Colors.grey[800]! : Colors.grey[300]!),
       ),
       child: Column(
         children: [
           const Icon(CupertinoIcons.headphones, color: Colors.amber, size: 32),
           const SizedBox(height: 12),
-          const Text(
+          Text(
             'SUPPORT CENTER',
             style: TextStyle(
-              color: Colors.white,
-              fontSize: 18,
+              color: isDark ? Colors.white : Colors.black87,
+              fontSize: 16,
               fontWeight: FontWeight.w900,
-              letterSpacing: 1.5,
+              letterSpacing: 1.2,
             ),
           ),
           const SizedBox(height: 16),
-          const Divider(color: Colors.white24),
+          Divider(color: isDark ? Colors.white24 : Colors.black12),
           const SizedBox(height: 16),
-          
-          // Name
           _supportRow(CupertinoIcons.person_solid, "Owner", "RAJA OWNER"),
           const SizedBox(height: 12),
-          
-          // Phone / WhatsApp
           GestureDetector(
             onTap: () => _sendToWhatsApp("Hello Support!"),
             child: _supportRow(Icons.chat, "WhatsApp", "+91 8406962570", isLink: true),
           ),
           const SizedBox(height: 12),
-          
-          // Email
-          _supportRow(CupertinoIcons.mail_solid, "Email", "raaxbhaii@gmail.com"),
+          _supportRow(CupertinoIcons.mail_solid, "Email", adminEmail),
         ],
       ),
     );
@@ -475,10 +448,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: Colors.white10,
+            color: isDark ? Colors.white10 : Colors.black.withOpacity(0.05),
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Icon(icon, color: isLink ? Colors.greenAccent : Colors.grey[400], size: 18),
+          child: Icon(icon, color: isLink ? Colors.green : (isDark ? Colors.grey[400] : Colors.grey[700]), size: 18),
         ),
         const SizedBox(width: 12),
         Column(
@@ -486,12 +459,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           children: [
             Text(
               label,
-              style: const TextStyle(color: Colors.white54, fontSize: 12),
+              style: TextStyle(color: isDark ? Colors.white54 : Colors.black54, fontSize: 12),
             ),
             Text(
               value,
               style: TextStyle(
-                color: isLink ? Colors.greenAccent : Colors.white,
+                color: isLink ? Colors.green : (isDark ? Colors.white : Colors.black87),
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
               ),
@@ -502,257 +475,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     );
   }
 
-  // ==================== MODALS & ACTIONS ====================
-
-  // Method to buy item using UTR
-  void _showPurchaseDialog(PopularityPackage package) {
-    final TextEditingController gameIdCtrl = TextEditingController();
-    final TextEditingController utrCtrl = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: isDark ? Colors.grey[900] : Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: const Color(0xFFE23E57).withOpacity(0.15),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: const Icon(CupertinoIcons.star_fill,
-                  color: Color(0xFFE23E57), size: 24),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                'Buy ${package.title}',
-                style: TextStyle(
-                  color: isDark ? Colors.white : Colors.black87,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-            ),
-          ],
-        ),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.green.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.green.withOpacity(0.3)),
-                ),
-                child: Text(
-                  '1. Pay ₹${package.price} to UPI: $adminUpiId\n2. Enter Game ID & UTR below.',
-                  style: const TextStyle(color: Colors.green, fontWeight: FontWeight.w600),
-                ),
-              ),
-              const SizedBox(height: 16),
-              
-              // Game ID Input
-              TextField(
-                controller: gameIdCtrl,
-                style: TextStyle(color: isDark ? Colors.white : Colors.black87),
-                decoration: InputDecoration(
-                  labelText: 'Enter Game ID',
-                  labelStyle: TextStyle(color: Colors.grey[500]),
-                  filled: true,
-                  fillColor: isDark ? Colors.grey[800] : Colors.grey[100],
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              
-              // UTR Input
-              TextField(
-                controller: utrCtrl,
-                style: TextStyle(color: isDark ? Colors.white : Colors.black87),
-                decoration: InputDecoration(
-                  labelText: 'Enter 12-Digit UTR No.',
-                  labelStyle: TextStyle(color: Colors.grey[500]),
-                  filled: true,
-                  fillColor: isDark ? Colors.grey[800] : Colors.grey[100],
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              'Cancel',
-              style: TextStyle(
-                color: isDark ? Colors.grey[400] : Colors.grey[600],
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              if (gameIdCtrl.text.isEmpty || utrCtrl.text.isEmpty) {
-                _showSnackbar("Please fill both Game ID and UTR.");
-                return;
-              }
-              Navigator.pop(context);
-              
-              // Formatting WhatsApp Message
-              String msg = "🔥 *NEW POPULARITY ORDER* 🔥\n\n"
-                  "📦 *Item:* ${package.title}\n"
-                  "💎 *Popularity:* +${package.popularityAmount}\n"
-                  "💰 *Price:* ₹${package.price}\n"
-                  "🎮 *Game ID:* ${gameIdCtrl.text}\n"
-                  "✅ *UTR No:* ${utrCtrl.text}\n\n"
-                  "Please verify payment and send popularity.";
-                  
-              _sendToWhatsApp(msg);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFE23E57),
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            child: const Text(
-              'Submit Payment',
-              style: TextStyle(fontWeight: FontWeight.w800),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Method to Add Money to Wallet using UTR
-  void _showTopUpDialog() {
-    final TextEditingController amountCtrl = TextEditingController();
-    final TextEditingController utrCtrl = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: isDark ? Colors.grey[900] : Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text(
-          'Add Money to Wallet',
-          style: TextStyle(
-            color: isDark ? Colors.white : Colors.black87,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Send money to UPI: $adminUpiId and enter details to get wallet balance.',
-                style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[700]),
-              ),
-              const SizedBox(height: 16),
-              
-              TextField(
-                controller: amountCtrl,
-                keyboardType: TextInputType.number,
-                style: TextStyle(color: isDark ? Colors.white : Colors.black87),
-                decoration: InputDecoration(
-                  labelText: 'Amount Paid (₹)',
-                  filled: true,
-                  fillColor: isDark ? Colors.grey[800] : Colors.grey[100],
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              
-              TextField(
-                controller: utrCtrl,
-                style: TextStyle(color: isDark ? Colors.white : Colors.black87),
-                decoration: InputDecoration(
-                  labelText: 'Enter 12-Digit UTR',
-                  filled: true,
-                  fillColor: isDark ? Colors.grey[800] : Colors.grey[100],
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              if (amountCtrl.text.isEmpty || utrCtrl.text.isEmpty) {
-                _showSnackbar("Please fill all details.");
-                return;
-              }
-              Navigator.pop(context);
-              
-              // Formatting WhatsApp Message
-              String msg = "💳 *WALLET TOP-UP REQUEST* 💳\n\n"
-                  "💰 *Amount Sent:* ₹${amountCtrl.text}\n"
-                  "✅ *UTR No:* ${utrCtrl.text}\n\n"
-                  "Please verify payment and add to my wallet.";
-                  
-              _sendToWhatsApp(msg);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFF9A826),
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            ),
-            child: const Text('Send Details', style: TextStyle(fontWeight: FontWeight.bold)),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showSnackbar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message, style: const TextStyle(fontWeight: FontWeight.bold)),
-        backgroundColor: isDark ? Colors.grey[800] : Colors.grey[900],
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        margin: const EdgeInsets.all(16),
-        duration: const Duration(seconds: 3),
-      ),
-    );
-  }
-
-  // ==================== MAIN BUILD ====================
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: isDark ? Colors.grey[950] : Colors.grey[50],
       appBar: _buildAppBar(),
-      // Removed Bottom Navigation to keep the UI clean as requested.
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -761,18 +488,162 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             children: [
               const SizedBox(height: 12),
               _buildPopularityCard(),
-              
               const SizedBox(height: 24),
-              _buildSectionTitle('🎁 Buy Popularity'),
-              const SizedBox(height: 12),
-              ..._popularityPackages
-                  .map((package) => _buildPopularityPackageCard(package)),
-                  
+              Row(
+                children: [
+                  const Icon(CupertinoIcons.gift_fill, color: Color(0xFFE23E57), size: 20),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Buy Popularity',
+                    style: TextStyle(
+                      color: isDark ? Colors.white : Colors.black87,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              ..._popularityPackages.map((package) => _buildPopularityPackageCard(package)),
               const SizedBox(height: 16),
               _buildSupportCenter(),
               const SizedBox(height: 40),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+// ==================== CHECKOUT PAGE (PAY PAGE) ====================
+class CheckoutPage extends StatefulWidget {
+  final PopularityPackage package;
+
+  const CheckoutPage({super.key, required this.package});
+
+  @override
+  State<CheckoutPage> createState() => _CheckoutPageState();
+}
+
+class _CheckoutPageState extends State<CheckoutPage> {
+  final TextEditingController _gameIdController = TextEditingController();
+  final TextEditingController _characterNameController = TextEditingController();
+
+  bool get isDark => Theme.of(context).brightness == Brightness.dark;
+
+  @override
+  void dispose() {
+    _gameIdController.dispose();
+    _characterNameController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: isDark ? Colors.grey[950] : Colors.grey[50],
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        iconTheme: IconThemeData(color: isDark ? Colors.white : Colors.black),
+        title: Text(
+          'Enter Details',
+          style: TextStyle(color: isDark ? Colors.white : Colors.black, fontWeight: FontWeight.w800),
+        ),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Selected Item Summary
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: isDark ? Colors.grey[900] : Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: isDark ? Colors.grey[800]! : Colors.grey[200]!),
+              ),
+              child: Row(
+                children: [
+                  Icon(widget.package.icon, size: 30, color: const Color(0xFF667eea)),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(widget.package.title, style: TextStyle(color: isDark ? Colors.white : Colors.black87, fontWeight: FontWeight.bold, fontSize: 16)),
+                        Text('+${widget.package.popularityAmount} Popularity', style: const TextStyle(color: Color(0xFFF9A826), fontWeight: FontWeight.w600)),
+                      ],
+                    ),
+                  ),
+                  Text('₹${widget.package.price}', style: const TextStyle(color: Color(0xFFE23E57), fontWeight: FontWeight.w900, fontSize: 18)),
+                ],
+              ),
+            ),
+            const SizedBox(height: 30),
+            
+            Text('Player Information', style: TextStyle(color: isDark ? Colors.white : Colors.black87, fontSize: 16, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 12),
+            
+            // Game ID Input
+            TextField(
+              controller: _gameIdController,
+              keyboardType: TextInputType.number,
+              style: TextStyle(color: isDark ? Colors.white : Colors.black),
+              decoration: InputDecoration(
+                labelText: 'Enter BGMI / PUBG Game ID',
+                prefixIcon: const Icon(CupertinoIcons.game_controller),
+                filled: true,
+                fillColor: isDark ? Colors.grey[900] : Colors.white,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Character Name Input
+            TextField(
+              controller: _characterNameController,
+              style: TextStyle(color: isDark ? Colors.white : Colors.black),
+              decoration: InputDecoration(
+                labelText: 'Enter Character Name (Optional)',
+                prefixIcon: const Icon(CupertinoIcons.person),
+                filled: true,
+                fillColor: isDark ? Colors.grey[900] : Colors.white,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+              ),
+            ),
+            
+            const SizedBox(height: 40),
+
+            // Proceed Button -> Goes to payment.dart
+            SizedBox(
+              width: double.infinity,
+              height: 55,
+              child: ElevatedButton(
+                onPressed: () {
+                  if (_gameIdController.text.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please enter Game ID')));
+                    return;
+                  }
+                  
+                  // Yahan se aapke payment.dart screen par jayega
+                  Navigator.push(
+                    context,
+                    CupertinoPageRoute(
+                      builder: (context) => const PaymentPage(), // Aapka payment screen
+                    ),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFE23E57),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                ),
+                child: const Text('Proceed to Payment', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+              ),
+            ),
+          ],
         ),
       ),
     );
