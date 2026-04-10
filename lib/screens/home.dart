@@ -65,6 +65,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   int _userPopularity = 3420;
   
   final TextEditingController _gameIdController = TextEditingController();
+  
   final List<GameItem> _featuredGames = [
     GameItem(
       id: 'BGMI_7821',
@@ -95,8 +96,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       skins: '15 Legendary + M4 Glacier',
       popularity: 12400,
       price: 4999,
-      imageUrl: 'assets/bgmi_3.jpg',
-      isPremium: true,    ),
+      imageUrl: 'assets/bgmi_3.jpg',      isPremium: true,
+    ),
   ];
 
   final List<PopularityExchange> _exchangeOffers = [
@@ -105,21 +106,21 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       description: 'Get 600 UC + 100 Bonus',
       requiredPopularity: 500,
       reward: '600 UC',
-      icon: CupertinoIcons.gift_fill,
+      icon: CupertinoIcons.gift,
     ),
     PopularityExchange(
       title: 'Legendary Crate',
       description: 'Unlock exclusive crate coupon',
       requiredPopularity: 1500,
       reward: '1x Crate',
-      icon: CupertinoIcons.briefcase_fill,
+      icon: CupertinoIcons.briefcase,
     ),
     PopularityExchange(
       title: 'Name Change Card',
       description: 'Change your in-game name',
       requiredPopularity: 800,
       reward: '1x Card',
-      icon: CupertinoIcons.pencil_circle_fill,
+      icon: CupertinoIcons.pencil_circle,
     ),
   ];
 
@@ -144,8 +145,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     ).animate(CurvedAnimation(
       parent: _slideController,
       curve: Curves.easeOutBack,
-    ));
-        _fadeController.forward();
+    ));    
+    _fadeController.forward();
     _slideController.forward();
   }
 
@@ -185,7 +186,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           ),
           child: Row(
             children: [
-              Icon(isDark ? CupertinoIcons.moon_fill : CupertinoIcons.sun_max_fill, 
+              Icon(isDark ? CupertinoIcons.moon : CupertinoIcons.sun_max, 
                    color: isDark ? Colors.amber : Colors.orange, size: 16),
               Switch(
                 value: isDark,
@@ -193,15 +194,15 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 thumbColor: WidgetStateProperty.all(Colors.white),
                 onChanged: (value) {
                   themeNotifier.value = value ? ThemeMode.dark : ThemeMode.light;
-                  prefs.setBool('isDark', value);
-                },              ),
+                  prefs.setBool('isDark', value);                },
+              ),
             ],
           ),
         ),
         
         // Settings
         IconButton(
-          icon: Icon(CupertinoIcons.gear_alt_fill, 
+          icon: Icon(CupertinoIcons.gear, 
               color: isDark ? Colors.white : Colors.black87, size: 22),
           onPressed: () => Navigator.push(
             context, 
@@ -232,7 +233,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             ),
             child: Row(
               children: [
-                const Icon(CupertinoIcons.creditcard_fill, color: Colors.white, size: 16),
+                const Icon(CupertinoIcons.creditcard, color: Colors.white, size: 16),
                 const SizedBox(width: 4),
                 Text(
                   '₹${_walletBalance.toStringAsFixed(0)}',
@@ -242,8 +243,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     fontSize: 14,
                   ),
                 ),
-              ],
-            ),          ),
+              ],            ),
+          ),
         ),
       ],
     );
@@ -281,7 +282,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               color: isDark ? Colors.grey[400] : Colors.grey[600]),
           suffixIcon: _gameIdController.text.isNotEmpty
               ? IconButton(
-                  icon: Icon(CupertinoIcons.xmark_circle_fill, 
+                  icon: Icon(CupertinoIcons.xmark_circle, 
                       color: isDark ? Colors.grey[400] : Colors.grey[600]),
                   onPressed: () => _gameIdController.clear(),
                 )
@@ -291,8 +292,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             color: isDark ? Colors.grey[500] : Colors.grey[500],
             fontSize: 14,
           ),
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(vertical: 16),        ),
+          border: InputBorder.none,          contentPadding: const EdgeInsets.symmetric(vertical: 16),
+        ),
         onSubmitted: (value) => _searchGameId(value),
       ),
     );
@@ -324,7 +325,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               color: Colors.white.withOpacity(0.2),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(CupertinoIcons.star_fill, color: Colors.amber, size: 28),
+            child: const Icon(CupertinoIcons.star, color: Colors.amber, size: 28),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -340,8 +341,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   ),
                 ),
                 const SizedBox(height: 4),
-                Row(
-                  children: [                    Text(
+                Row(                  children: [
+                    Text(
                       '$_userPopularity',
                       style: const TextStyle(
                         color: Colors.white,
@@ -438,8 +439,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             border: Border.all(
               color: isDark ? Colors.grey[700]! : Colors.grey[200]!,
               width: 1,
-            ),
-            boxShadow: [              BoxShadow(
+            ),            boxShadow: [
+              BoxShadow(
                 color: Colors.black.withOpacity(0.1),
                 blurRadius: 15,
                 offset: const Offset(0, 8),
@@ -485,10 +486,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     ),
                     child: const Row(
                       children: [
-                        Icon(CupertinoIcons.star_fill, color: Colors.white, size: 12),
+                        Icon(CupertinoIcons.star, color: Colors.white, size: 12),
                         SizedBox(width: 4),
-                        Text(
-                          'PREMIUM',                          style: TextStyle(
+                        Text(                          'PREMIUM',
+                          style: TextStyle(
                             color: Colors.white,
                             fontSize: 10,
                             fontWeight: FontWeight.w900,
@@ -536,9 +537,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                           decoration: BoxDecoration(
                             color: const Color(0xFFE23E57).withOpacity(0.15),
                             borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Row(                            children: [
-                              const Icon(CupertinoIcons.star_fill, 
+                          ),                          child: Row(
+                            children: [
+                              const Icon(CupertinoIcons.star, 
                                   color: Color(0xFFF9A826), size: 14),
                               const SizedBox(width: 4),
                               Text(
@@ -566,7 +567,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       ),
                       child: Row(
                         children: [
-                          Icon(CupertinoIcons.briefcase_fill, 
+                          Icon(CupertinoIcons.briefcase, 
                               color: isDark ? Colors.grey[300] : Colors.grey[600], size: 16),
                           const SizedBox(width: 8),
                           Text(
@@ -585,8 +586,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     
                     // Price & Action
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [                        Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,                      children: [
+                        Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
@@ -634,8 +635,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   ],
                 ),
               ),
-            ],
-          ),        ),
+            ],          ),
+        ),
       ),
     );
   }
@@ -683,8 +684,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   const SizedBox(height: 10),
                   Text(
                     offer.title,
-                    style: TextStyle(
-                      color: isDark ? Colors.white : Colors.black87,                      fontSize: 14,
+                    style: TextStyle(                      color: isDark ? Colors.white : Colors.black87,
+                      fontSize: 14,
                       fontWeight: FontWeight.w700,
                     ),
                     maxLines: 1,
@@ -703,7 +704,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   const Spacer(),
                   Row(
                     children: [
-                      const Icon(CupertinoIcons.star_fill, 
+                      const Icon(CupertinoIcons.star, 
                           color: Color(0xFFF9A826), size: 12),
                       const SizedBox(width: 4),
                       Text(
@@ -732,8 +733,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         CupertinoPageRoute(builder: (_) => const BookDetailsPage())
       ),
       child: Container(
-        height: 220,
-        width: double.infinity,        decoration: BoxDecoration(
+        height: 220,        width: double.infinity,
+        decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(24),
           gradient: const LinearGradient(
             colors: [Color(0xFF1a1a2e), Color(0xFF16213e), Color(0xFF0f3460)],
@@ -781,8 +782,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
-                      color: Colors.white70,
-                      letterSpacing: 1.5,                    ),
+                      color: Colors.white70,                      letterSpacing: 1.5,
+                    ),
                   ),
                   SizedBox(height: 4),
                   Text(
@@ -830,8 +831,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
             // Game Info
             Positioned(
-              bottom: 60,
-              left: 20,              child: Column(
+              bottom: 60,              left: 20,
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
@@ -860,7 +861,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         ),
                         child: const Row(
                           children: [
-                            Icon(CupertinoIcons.checkmark_circle_fill, 
+                            Icon(CupertinoIcons.checkmark_circled, 
                                 color: Colors.green, size: 12),
                             SizedBox(width: 4),
                             Text(
@@ -879,8 +880,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         '50/100 Joined',
                         style: TextStyle(
                           color: Colors.white.withOpacity(0.8),
-                          fontSize: 12,
-                        ),                      ),
+                          fontSize: 12,                        ),
+                      ),
                     ],
                   ),
                 ],
@@ -928,8 +929,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         BoxShadow(
                           color: const Color(0xFFE23E57).withOpacity(0.4),
                           blurRadius: 10,
-                          offset: const Offset(0, 5),
-                        )                      ],
+                          offset: const Offset(0, 5),                        )
+                      ],
                     ),
                     child: const Text(
                       'JOIN NOW →',
@@ -970,15 +971,15 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _navItem(0, CupertinoIcons.house_fill, 'Home'),
-              _navItem(1, CupertinoIcons.game_controller_fill, 'Store'),
-              _navItem(2, CupertinoIcons.trophy_fill, 'Tournaments'),
-              _navItem(3, CupertinoIcons.person_fill, 'Profile'),
+              _navItem(0, CupertinoIcons.house, 'Home'),
+              _navItem(1, CupertinoIcons.game_controller, 'Store'),
+              _navItem(2, CupertinoIcons.trophy, 'Tournaments'),
+              _navItem(3, CupertinoIcons.person, 'Profile'),
             ],
           ),
         ),
-      ),
-    );  }
+      ),    );
+  }
 
   Widget _navItem(int index, IconData icon, String label) {
     final isSelected = _selectedIndex == index;
@@ -1026,8 +1027,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   void _showWalletBottomSheet() {
     showModalBottomSheet(
-      context: context,
-      backgroundColor: isDark ? Colors.grey[900] : Colors.white,      shape: const RoundedRectangleBorder(
+      context: context,      backgroundColor: isDark ? Colors.grey[900] : Colors.white,
+      shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (context) => StatefulBuilder(
@@ -1063,7 +1064,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     ),
                   ),
                   IconButton(
-                    icon: Icon(CupertinoIcons.xmark_circle_fill, 
+                    icon: Icon(CupertinoIcons.xmark_circle, 
                         color: isDark ? Colors.grey[400] : Colors.grey[600]),
                     onPressed: () => Navigator.pop(context),
                   ),
@@ -1075,8 +1076,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               // Balance Card
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(                  gradient: const LinearGradient(
+                padding: const EdgeInsets.all(20),                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
                     colors: [Color(0xFFF9A826), Color(0xFFE23E57)],
                   ),
                   borderRadius: BorderRadius.circular(16),
@@ -1110,7 +1111,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 children: [
                   Expanded(
                     child: _walletActionButton(
-                      icon: CupertinoIcons.plus_circle_fill,
+                      icon: CupertinoIcons.plus_circled,
                       label: 'Add Money',
                       color: const Color(0xFF667eea),
                       onTap: () {
@@ -1124,8 +1125,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: _walletActionButton(
-                      icon: CupertinoIcons.arrow_up_circle_fill,                      label: 'Withdraw',
+                    child: _walletActionButton(                      icon: CupertinoIcons.arrow_up_circle,
+                      label: 'Withdraw',
                       color: const Color(0xFFE23E57),
                       onTap: () => _showSnackbar('Withdraw coming soon!'),
                     ),
@@ -1133,7 +1134,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   const SizedBox(width: 12),
                   Expanded(
                     child: _walletActionButton(
-                      icon: CupertinoIcons.clock_fill,
+                      icon: CupertinoIcons.clock,
                       label: 'History',
                       color: Colors.grey[600]!,
                       onTap: () => _showTransactionHistory(),
@@ -1173,8 +1174,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 14),
-        decoration: BoxDecoration(
-          color: color.withOpacity(0.1),          borderRadius: BorderRadius.circular(12),
+        decoration: BoxDecoration(          color: color.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(12),
           border: Border.all(color: color.withOpacity(0.3)),
         ),
         child: Column(
@@ -1198,7 +1199,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   List<Widget> _buildTransactionItems() {
     final transactions = [
       {'title': 'BGMI ID Purchase', 'amount': '-₹1,299', 'date': 'Today, 2:30 PM', 'icon': CupertinoIcons.game_controller},
-      {'title': 'Wallet Top-up', 'amount': '+₹2,000', 'date': 'Yesterday, 11:15 AM', 'icon': CupertinoIcons.plus_circle},
+      {'title': 'Wallet Top-up', 'amount': '+₹2,000', 'date': 'Yesterday, 11:15 AM', 'icon': CupertinoIcons.plus_circled},
       {'title': 'Tournament Entry', 'amount': '-₹50', 'date': 'Dec 8, 4:20 PM', 'icon': CupertinoIcons.trophy},
     ];
     
@@ -1222,8 +1223,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             child: Icon(
               tx['icon'] as IconData,
               color: (tx['amount'] as String).startsWith('+') 
-                  ? Colors.green
-                  : Colors.redAccent,              size: 20,
+                  ? Colors.green                  : Colors.redAccent,
+              size: 20,
             ),
           ),
           const SizedBox(width: 14),
@@ -1271,8 +1272,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       backgroundColor: isDark ? Colors.grey[900] : Colors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (context) => Padding(        padding: const EdgeInsets.all(20),
+      ),      builder: (context) => Padding(
+        padding: const EdgeInsets.all(20),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1319,9 +1320,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(CupertinoIcons.star_fill, color: Colors.amber, size: 24),
-                  const SizedBox(width: 8),
-                  Text(                    '$_userPopularity Points Available',
+                  const Icon(CupertinoIcons.star, color: Colors.amber, size: 24),
+                  const SizedBox(width: 8),                  Text(
+                    '$_userPopularity Points Available',
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 16,
@@ -1369,8 +1370,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                             fontWeight: FontWeight.w700,
                             fontSize: 15,
                           ),
-                        ),
-                        const SizedBox(height: 4),                        Text(
+                        ),                        const SizedBox(height: 4),
+                        Text(
                           offer.description,
                           style: TextStyle(
                             color: isDark ? Colors.grey[400] : Colors.grey[600],
@@ -1385,7 +1386,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     children: [
                       Row(
                         children: [
-                          const Icon(CupertinoIcons.star_fill, 
+                          const Icon(CupertinoIcons.star, 
                               color: Color(0xFFF9A826), size: 14),
                           const SizedBox(width: 4),
                           Text(
@@ -1418,8 +1419,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                           child: const Text(
                             'Redeem',
                             style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
-                          ),
-                        ),                      ),
+                          ),                        ),
+                      ),
                     ],
                   ),
                 ],
@@ -1447,7 +1448,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 color: const Color(0xFFE23E57).withOpacity(0.15),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: const Icon(CupertinoIcons.game_controller_fill, 
+              child: const Icon(CupertinoIcons.game_controller, 
                   color: Color(0xFFE23E57), size: 24),
             ),
             const SizedBox(width: 12),
@@ -1467,8 +1468,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                padding: const EdgeInsets.all(16),                decoration: BoxDecoration(
+              Container(                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
                   color: isDark ? Colors.grey[800] : Colors.grey[50],
                   borderRadius: BorderRadius.circular(14),
                 ),
@@ -1516,8 +1517,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           ),
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),            child: Text(
+          TextButton(            onPressed: () => Navigator.pop(context),
+            child: Text(
               'Cancel',
               style: TextStyle(
                 color: isDark ? Colors.grey[400] : Colors.grey[600],
@@ -1565,8 +1566,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             value,
             style: TextStyle(
               color: isDark ? Colors.white : Colors.black87,
-              fontWeight: FontWeight.w600,
-              fontSize: 14,            ),
+              fontWeight: FontWeight.w600,              fontSize: 14,
+            ),
           ),
         ],
       ),
@@ -1610,12 +1611,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
-                  CupertinoIcons.checkmark_circle_fill,
+                  CupertinoIcons.checkmark_circled,
                   color: Colors.green,
                   size: 60,
                 ),
-              ),
-              const SizedBox(height: 20),              Text(
+              ),              const SizedBox(height: 20),
+              Text(
                 'Purchase Successful! 🎉',
                 style: TextStyle(
                   color: isDark ? Colors.white : Colors.black87,
@@ -1663,8 +1664,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   void _redeemExchange(PopularityExchange offer) {
     if (offer.requiredPopularity > _userPopularity) {
-      _showSnackbar('Not enough popularity points!');
-      return;    }
+      _showSnackbar('Not enough popularity points!');      return;
+    }
     
     showDialog(
       context: context,
@@ -1698,7 +1699,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               ),
               child: Row(
                 children: [
-                  const Icon(CupertinoIcons.star_fill, color: Color(0xFFF9A826), size: 18),
+                  const Icon(CupertinoIcons.star, color: Color(0xFFF9A826), size: 18),
                   const SizedBox(width: 8),
                   Text(
                     '${offer.requiredPopularity} points will be deducted',
@@ -1712,8 +1713,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             ),
           ],
         ),
-        actions: [
-          TextButton(            onPressed: () => Navigator.pop(context),
+        actions: [          TextButton(
+            onPressed: () => Navigator.pop(context),
             child: Text(
               'Cancel',
               style: TextStyle(
@@ -1746,9 +1747,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   void _searchGameId(String query) {
     if (query.isEmpty) return;
-    
     _showSnackbar('Searching for: "$query"...');
-    // Add your search logic here
   }
 
   void _showTransactionHistory() {
@@ -1762,8 +1761,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         backgroundColor: isDark ? Colors.grey[800] : Colors.grey[900],
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        margin: const EdgeInsets.all(16),        duration: const Duration(seconds: 2),
-      ),
+        margin: const EdgeInsets.all(16),
+        duration: const Duration(seconds: 2),      ),
     );
   }
 
@@ -1781,37 +1780,24 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 12),
-              
-              // Search Bar
               _buildSearchBar(),
               const SizedBox(height: 20),
-              
-              // Popularity Card
               _buildPopularityCard(),
               const SizedBox(height: 24),
-              
-              // Gaming Store Section
               _buildSectionTitle('🎮 Gaming Store', 'See All'),
               const SizedBox(height: 12),
-              
-              // Exchange Offers Horizontal Scroll
               _buildExchangeOffers(),
               const SizedBox(height: 24),
-              
-              // Featured Game IDs
               _buildSectionTitle('🔥 Featured Game IDs', null),
               const SizedBox(height: 12),
-              
-              // Game Cards List
               ..._featuredGames.map((game) => _buildGameCard(game)),
               const SizedBox(height: 20),
-              
-              // Upcoming Tournament
               _buildSectionTitle('🏆 Upcoming Tournaments', 'See All'),
               const SizedBox(height: 12),
               _buildTournamentCard(),
               const SizedBox(height: 30),
-            ],          ),
+            ],
+          ),
         ),
       ),
       bottomNavigationBar: _buildBottomNav(),
