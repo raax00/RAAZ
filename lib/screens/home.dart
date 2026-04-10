@@ -1,16 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
-import 'dart:async';
-
-// NOTE: Apne hisaab se in imports ko adjust kar lena agar file path alag ho
-import '../main.dart';
-import 'settings.dart';
-import 'payment.dart';
-import 'book_details.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 // ==================== MODELS ====================
 
-// 1. New Model For Popularity Items
 class PopularityPackage {
   final String id;
   final String title;
@@ -31,7 +24,6 @@ class PopularityPackage {
   });
 }
 
-// 2. Exchange Model (Kept as requested)
 class PopularityExchange {
   final String title;
   final String description;
@@ -62,13 +54,14 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
 
-  int _selectedIndex = 0;
-  double _walletBalance = 1250.00;
+  final double _walletBalance = 0.00;
   int _userPopularity = 3420;
 
-  final TextEditingController _searchController = TextEditingController();
+  // Admin Details
+  final String adminPhone = "918406962570";
+  final String adminEmail = "raaxbhaii@gmail.com";
+  final String adminUpiId = "rajaowner@ybl"; // Change this to your real UPI ID
 
-  // ONLY POPULARITY PACKAGES IN STORE
   final List<PopularityPackage> _popularityPackages = [
     PopularityPackage(
       id: 'POP_BIKE',
@@ -105,13 +98,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       requiredPopularity: 500,
       reward: '600 UC',
       icon: CupertinoIcons.gift,
-    ),
-    PopularityExchange(
-      title: 'Legendary Crate',
-      description: 'Unlock exclusive crate coupon',
-      requiredPopularity: 1500,
-      reward: '1x Crate',
-      icon: CupertinoIcons.briefcase,
     ),
     PopularityExchange(
       title: 'Name Change Card',
@@ -152,11 +138,26 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   void dispose() {
     _fadeController.dispose();
     _slideController.dispose();
-    _searchController.dispose();
     super.dispose();
   }
 
   bool get isDark => Theme.of(context).brightness == Brightness.dark;
+
+  // ==================== WHATSAPP LAUNCHER ====================
+  Future<void> _sendToWhatsApp(String message) async {
+    final String encodedMessage = Uri.encodeComponent(message);
+    final Uri url = Uri.parse('https://wa.me/$adminPhone?text=$encodedMessage');
+
+    try {
+      if (await canLaunchUrl(url)) {
+        await launchUrl(url, mode: LaunchMode.externalApplication);
+      } else {
+        _showSnackbar('Could not open WhatsApp. Please install it.');
+      }
+    } catch (e) {
+      _showSnackbar('Error opening WhatsApp: $e');
+    }
+  }
 
   // ==================== UI BUILDERS ====================
 
@@ -177,45 +178,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         ),
       ),
       actions: [
-        // Theme Toggle
-        Container(
-          margin: const EdgeInsets.only(right: 8),
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
-            color: isDark ? Colors.grey[800] : Colors.grey[200],
-          ),
-          child: Row(
-            children: [
-              Icon(isDark ? CupertinoIcons.moon : CupertinoIcons.sun_max,
-                  color: isDark ? Colors.amber : Colors.orange, size: 16),
-              Switch(
-                value: isDark,
-                activeColor: const Color(0xFFE23E57),
-                thumbColor: WidgetStateProperty.all(Colors.white),
-                onChanged: (value) {
-                  // Make sure themeNotifier & prefs exist in your main.dart
-                  themeNotifier.value = value ? ThemeMode.dark : ThemeMode.light;
-                  prefs.setBool('isDark', value);
-                },
-              ),
-            ],
-          ),
-        ),
-        // Settings
-        IconButton(
-          icon: Icon(CupertinoIcons.gear,
-              color: isDark ? Colors.white : Colors.black87, size: 22),
-          onPressed: () => Navigator.push(
-            context,
-            CupertinoPageRoute(builder: (_) => const SettingsPage()),
-          ),
-        ),
-        // Wallet
+        // Wallet Button
         GestureDetector(
-          onTap: () => _showWalletBottomSheet(),
+          onTap: () => _showTopUpDialog(),
           child: Container(
-            margin: const EdgeInsets.only(right: 12),
+            margin: const EdgeInsets.only(right: 16),
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
               gradient: const LinearGradient(
@@ -234,8 +201,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             ),
             child: Row(
               children: [
-                const Icon(CupertinoIcons.creditcard, color: Colors.white, size: 16),
-                const SizedBox(width: 4),
+                const Icon(CupertinoIcons.plus_app_fill,
+                    color: Colors.white, size: 16),
+                const SizedBox(width: 6),
                 Text(
                   '₹${_walletBalance.toStringAsFixed(0)}',
                   style: const TextStyle(
@@ -249,55 +217,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildSearchBar() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 4),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: isDark
-              ? [Colors.grey[900]!, Colors.grey[800]!]
-              : [Colors.grey[100]!, Colors.grey[200]!],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: isDark ? Colors.grey[700]! : Colors.grey[300]!,
-          width: 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          )
-        ],
-      ),
-      child: TextField(
-        controller: _searchController,
-        style: TextStyle(color: isDark ? Colors.white : Colors.black87),
-        decoration: InputDecoration(
-          prefixIcon: Icon(CupertinoIcons.search,
-              color: isDark ? Colors.grey[400] : Colors.grey[600]),
-          suffixIcon: _searchController.text.isNotEmpty
-              ? IconButton(
-                  icon: Icon(CupertinoIcons.xmark_circle,
-                      color: isDark ? Colors.grey[400] : Colors.grey[600]),
-                  onPressed: () => _searchController.clear(),
-                )
-              : null,
-          hintText: 'Search Popularity Items...',
-          hintStyle: TextStyle(
-            color: isDark ? Colors.grey[500] : Colors.grey[500],
-            fontSize: 14,
-          ),
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(vertical: 16),
-        ),
-      ),
     );
   }
 
@@ -354,42 +273,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         fontWeight: FontWeight.w900,
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Text(
-                        'Growing 🔥',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
                   ],
                 ),
               ],
-            ),
-          ),
-          ElevatedButton(
-            onPressed: _showExchangeModal,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: const Color(0xFF764ba2),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              elevation: 0,
-            ),
-            child: const Text(
-              'Exchange',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
             ),
           ),
         ],
@@ -397,36 +283,18 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildSectionTitle(String title, String? action) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          title,
-          style: TextStyle(
-            color: isDark ? Colors.white : Colors.black87,
-            fontSize: 18,
-            fontWeight: FontWeight.w800,
-            letterSpacing: 0.5,
-          ),
-        ),
-        if (action != null)
-          GestureDetector(
-            onTap: () {},
-            child: Text(
-              action,
-              style: const TextStyle(
-                color: Color(0xFFF9A826),
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-      ],
+  Widget _buildSectionTitle(String title) {
+    return Text(
+      title,
+      style: TextStyle(
+        color: isDark ? Colors.white : Colors.black87,
+        fontSize: 18,
+        fontWeight: FontWeight.w800,
+        letterSpacing: 0.5,
+      ),
     );
   }
 
-  // UPDATED: Builds Popularity Package Card instead of Game ID
   Widget _buildPopularityPackageCard(PopularityPackage package) {
     return FadeTransition(
       opacity: _fadeAnimation,
@@ -459,7 +327,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             padding: const EdgeInsets.all(16),
             child: Row(
               children: [
-                // Icon / Avatar
+                // Icon
                 Container(
                   height: 80,
                   width: 80,
@@ -483,34 +351,13 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            package.title,
-                            style: TextStyle(
-                              color: isDark ? Colors.white : Colors.black87,
-                              fontSize: 18,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                          if (package.isPremium)
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 6, vertical: 3),
-                              decoration: BoxDecoration(
-                                color: Colors.amber.withOpacity(0.2),
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: const Text(
-                                'HOT',
-                                style: TextStyle(
-                                    color: Colors.amber,
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.bold),
-                              ),
-                            ),
-                        ],
+                      Text(
+                        package.title,
+                        style: TextStyle(
+                          color: isDark ? Colors.white : Colors.black87,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800,
+                        ),
                       ),
                       const SizedBox(height: 4),
                       Text(
@@ -524,7 +371,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          // Popularity Amount
                           Row(
                             children: [
                               const Icon(CupertinoIcons.star_fill,
@@ -540,9 +386,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                               ),
                             ],
                           ),
-                          // Buy Button
                           ElevatedButton(
-                            onPressed: () => _buyPopularityItem(package),
+                            onPressed: () => _showPurchaseDialog(package),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFFE23E57),
                               foregroundColor: Colors.white,
@@ -556,7 +401,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                               elevation: 0,
                             ),
                             child: Text(
-                              '₹${package.price.toStringAsFixed(0)}',
+                              'Buy ₹${package.price.toStringAsFixed(0)}',
                               style: const TextStyle(
                                 fontWeight: FontWeight.w800,
                                 fontSize: 13,
@@ -576,577 +421,93 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildExchangeOffers() {
-    return SizedBox(
-      height: 140,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        itemCount: _exchangeOffers.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 12),
-        itemBuilder: (context, index) {
-          final offer = _exchangeOffers[index];
-          return GestureDetector(
-            onTap: () => _redeemExchange(offer),
-            child: Container(
-              width: 160,
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: isDark
-                      ? [Colors.grey[850]!, Colors.grey[900]!]
-                      : [Colors.grey[50]!, Colors.white],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: isDark ? Colors.grey[700]! : Colors.grey[200]!,
-                  width: 1,
-                ),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF667eea).withOpacity(0.15),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Icon(offer.icon,
-                        color: const Color(0xFF667eea), size: 24),
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    offer.title,
-                    style: TextStyle(
-                      color: isDark ? Colors.white : Colors.black87,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    offer.description,
-                    style: TextStyle(
-                      color: isDark ? Colors.grey[400] : Colors.grey[600],
-                      fontSize: 11,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const Spacer(),
-                  Row(
-                    children: [
-                      const Icon(CupertinoIcons.star_fill,
-                          color: Color(0xFFF9A826), size: 12),
-                      const SizedBox(width: 4),
-                      Text(
-                        '${offer.requiredPopularity}',
-                        style: const TextStyle(
-                          color: Color(0xFFF9A826),
-                          fontWeight: FontWeight.w700,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  // ==================== BOTTOM NAVIGATION ====================
-
-  Widget _buildBottomNav() {
+  Widget _buildSupportCenter() {
     return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: isDark ? Colors.grey[900] : Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 20,
-            offset: const Offset(0, -5),
-          )
+        gradient: LinearGradient(
+          colors: [Colors.grey[900]!, Colors.black87],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.grey[800]!),
+      ),
+      child: Column(
+        children: [
+          const Icon(CupertinoIcons.headphones, color: Colors.amber, size: 32),
+          const SizedBox(height: 12),
+          const Text(
+            'SUPPORT CENTER',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 1.5,
+            ),
+          ),
+          const SizedBox(height: 16),
+          const Divider(color: Colors.white24),
+          const SizedBox(height: 16),
+          
+          // Name
+          _supportRow(CupertinoIcons.person_solid, "Owner", "RAJA OWNER"),
+          const SizedBox(height: 12),
+          
+          // Phone / WhatsApp
+          GestureDetector(
+            onTap: () => _sendToWhatsApp("Hello Support!"),
+            child: _supportRow(Icons.chat, "WhatsApp", "+91 8406962570", isLink: true),
+          ),
+          const SizedBox(height: 12),
+          
+          // Email
+          _supportRow(CupertinoIcons.mail_solid, "Email", "raaxbhaii@gmail.com"),
         ],
       ),
-      child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _navItem(0, CupertinoIcons.house, 'Home'),
-              _navItem(1, CupertinoIcons.gift, 'Store'),
-              _navItem(2, Icons.emoji_events, 'Battles'),
-              _navItem(3, CupertinoIcons.person, 'Profile'),
-            ],
-          ),
-        ),
-      ),
     );
   }
 
-  Widget _navItem(int index, IconData icon, String label) {
-    final isSelected = _selectedIndex == index;
-    return GestureDetector(
-      onTap: () => setState(() => _selectedIndex = index),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? const LinearGradient(
-                  colors: [Color(0xFFF9A826), Color(0xFFE23E57)],
-                ).colors.first.withOpacity(0.15)
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
+  Widget _supportRow(IconData icon, String label, String value, {bool isLink = false}) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Colors.white10,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(icon, color: isLink ? Colors.greenAccent : Colors.grey[400], size: 18),
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
+        const SizedBox(width: 12),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(
-              icon,
-              color: isSelected
-                  ? const Color(0xFFE23E57)
-                  : (isDark ? Colors.grey[400] : Colors.grey[600]),
-              size: 22,
-            ),
-            const SizedBox(height: 4),
             Text(
               label,
-              style: TextStyle(
-                color: isSelected
-                    ? const Color(0xFFE23E57)
-                    : (isDark ? Colors.grey[400] : Colors.grey[600]),
-                fontSize: 11,
-                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-              ),
+              style: const TextStyle(color: Colors.white54, fontSize: 12),
             ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // ==================== MODALS & ACTIONS ====================
-
-  void _showWalletBottomSheet() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: isDark ? Colors.grey[900] : Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (context) => StatefulBuilder(
-        builder: (context, setModalState) => Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  margin: const EdgeInsets.only(bottom: 20),
-                  decoration: BoxDecoration(
-                    color: isDark ? Colors.grey[700] : Colors.grey[300],
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'My Wallet',
-                    style: TextStyle(
-                      color: isDark ? Colors.white : Colors.black87,
-                      fontSize: 20,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                  IconButton(
-                    icon: Icon(CupertinoIcons.xmark_circle,
-                        color: isDark ? Colors.grey[400] : Colors.grey[600]),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFFF9A826), Color(0xFFE23E57)],
-                  ),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Column(
-                  children: [
-                    Text(
-                      'Available Balance',
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.9),
-                        fontSize: 14,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      '₹${_walletBalance.toStringAsFixed(2)}',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 32,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-              Row(
-                children: [
-                  Expanded(
-                    child: _walletActionButton(
-                      icon: CupertinoIcons.plus_circled,
-                      label: 'Add Money',
-                      color: const Color(0xFF667eea),
-                      onTap: () {
-                        Navigator.pop(context);
-                        Navigator.push(
-                          context,
-                          CupertinoPageRoute(
-                              builder: (_) => const PaymentPage()),
-                        );
-                      },
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _walletActionButton(
-                      icon: CupertinoIcons.clock,
-                      label: 'History',
-                      color: Colors.grey[600]!,
-                      onTap: () => _showSnackbar('History opening soon'),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
-              Text(
-                'Recent Transactions',
-                style: TextStyle(
-                  color: isDark ? Colors.white : Colors.black87,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 12),
-              ..._buildTransactionItems(),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _walletActionButton({
-    required IconData icon,
-    required String label,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 14),
-        decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: color.withOpacity(0.3)),
-        ),
-        child: Column(
-          children: [
-            Icon(icon, color: color, size: 24),
-            const SizedBox(height: 6),
             Text(
-              label,
+              value,
               style: TextStyle(
-                color: color,
-                fontSize: 12,
+                color: isLink ? Colors.greenAccent : Colors.white,
+                fontSize: 14,
                 fontWeight: FontWeight.w600,
               ),
             ),
           ],
         ),
-      ),
+      ],
     );
   }
 
-  List<Widget> _buildTransactionItems() {
-    final transactions = [
-      {
-        'title': 'Sports Car Pop',
-        'amount': '-₹249',
-        'date': 'Today, 2:30 PM',
-        'icon': CupertinoIcons.gift
-      },
-      {
-        'title': 'Wallet Top-up',
-        'amount': '+₹1,000',
-        'date': 'Yesterday, 11:15 AM',
-        'icon': CupertinoIcons.plus_circled
-      },
-    ];
+  // ==================== MODALS & ACTIONS ====================
 
-    return transactions.map((tx) => Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: isDark ? Colors.grey[800] : Colors.grey[50],
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: (tx['amount'] as String).startsWith('+')
-                  ? Colors.green.withOpacity(0.15)
-                  : Colors.redAccent.withOpacity(0.15),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(
-              tx['icon'] as IconData,
-              color: (tx['amount'] as String).startsWith('+')
-                  ? Colors.green
-                  : Colors.redAccent,
-              size: 20,
-            ),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  tx['title'] as String,
-                  style: TextStyle(
-                    color: isDark ? Colors.white : Colors.black87,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 14,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  tx['date'] as String,
-                  style: TextStyle(
-                    color: isDark ? Colors.grey[400] : Colors.grey[500],
-                    fontSize: 12,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Text(
-            tx['amount'] as String,
-            style: TextStyle(
-              color: (tx['amount'] as String).startsWith('+')
-                  ? Colors.green
-                  : Colors.redAccent,
-              fontWeight: FontWeight.w800,
-              fontSize: 15,
-            ),
-          ),
-        ],
-      ),
-    )).toList();
-  }
-
-  void _showExchangeModal() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: isDark ? Colors.grey[900] : Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (context) => Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                margin: const EdgeInsets.only(bottom: 20),
-                decoration: BoxDecoration(
-                  color: isDark ? Colors.grey[700] : Colors.grey[300],
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
-            Text(
-              'Popularity Exchange',
-              style: TextStyle(
-                color: isDark ? Colors.white : Colors.black87,
-                fontSize: 20,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Use your popularity points to unlock rewards',
-              style: TextStyle(
-                color: isDark ? Colors.grey[400] : Colors.grey[600],
-                fontSize: 14,
-              ),
-            ),
-            const SizedBox(height: 20),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF667eea), Color(0xFF764ba2)],
-                ),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(CupertinoIcons.star_fill,
-                      color: Colors.amber, size: 24),
-                  const SizedBox(width: 8),
-                  Text(
-                    '$_userPopularity Points Available',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
-            ..._exchangeOffers.map((offer) => Container(
-              margin: const EdgeInsets.only(bottom: 12),
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: isDark ? Colors.grey[800] : Colors.grey[50],
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(
-                  color: offer.requiredPopularity <= _userPopularity
-                      ? const Color(0xFF667eea).withOpacity(0.5)
-                      : Colors.transparent,
-                ),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF667eea).withOpacity(0.15),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Icon(offer.icon,
-                        color: const Color(0xFF667eea), size: 24),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          offer.title,
-                          style: TextStyle(
-                            color: isDark ? Colors.white : Colors.black87,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 15,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          offer.description,
-                          style: TextStyle(
-                            color: isDark ? Colors.grey[400] : Colors.grey[600],
-                            fontSize: 13,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Row(
-                        children: [
-                          const Icon(CupertinoIcons.star_fill,
-                              color: Color(0xFFF9A826), size: 14),
-                          const SizedBox(width: 4),
-                          Text(
-                            '${offer.requiredPopularity}',
-                            style: const TextStyle(
-                              color: Color(0xFFF9A826),
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      SizedBox(
-                        width: 80,
-                        child: ElevatedButton(
-                          onPressed: offer.requiredPopularity <= _userPopularity
-                              ? () => _redeemExchange(offer)
-                              : null,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor:
-                                offer.requiredPopularity <= _userPopularity
-                                    ? const Color(0xFF667eea)
-                                    : Colors.grey[400],
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 8),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            elevation: 0,
-                          ),
-                          child: const Text(
-                            'Redeem',
-                            style: TextStyle(
-                                fontSize: 12, fontWeight: FontWeight.w600),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            )),
-            const SizedBox(height: 20),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // UPDATED: Dynamic Logic to Buy Popularity
-  void _buyPopularityItem(PopularityPackage package) {
-    if (_walletBalance < package.price) {
-      _showSnackbar('Insufficient wallet balance!');
-      return;
-    }
+  // Method to buy item using UTR
+  void _showPurchaseDialog(PopularityPackage package) {
+    final TextEditingController gameIdCtrl = TextEditingController();
+    final TextEditingController utrCtrl = TextEditingController();
 
     showDialog(
       context: context,
@@ -1167,7 +528,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             const SizedBox(width: 12),
             Expanded(
               child: Text(
-                'Buy Popularity',
+                'Buy ${package.title}',
                 style: TextStyle(
                   color: isDark ? Colors.white : Colors.black87,
                   fontWeight: FontWeight.w800,
@@ -1176,50 +537,59 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             ),
           ],
         ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Are you sure you want to purchase ${package.title}?',
-              style: TextStyle(color: isDark ? Colors.grey[300] : Colors.black87),
-            ),
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: isDark ? Colors.grey[800] : Colors.grey[50],
-                borderRadius: BorderRadius.circular(14),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.green.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.green.withOpacity(0.3)),
+                ),
+                child: Text(
+                  '1. Pay ₹${package.price} to UPI: $adminUpiId\n2. Enter Game ID & UTR below.',
+                  style: const TextStyle(color: Colors.green, fontWeight: FontWeight.w600),
+                ),
               ),
-              child: Column(
-                children: [
-                  _detailRow('Item', package.title),
-                  _detailRow('Popularity Gain', '+${package.popularityAmount}'),
-                  const Divider(height: 24),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Total Deducted',
-                        style: TextStyle(
-                          color: isDark ? Colors.grey[300] : Colors.grey[700],
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      Text(
-                        '₹${package.price}',
-                        style: const TextStyle(
-                          color: Color(0xFFE23E57),
-                          fontWeight: FontWeight.w900,
-                          fontSize: 20,
-                        ),
-                      ),
-                    ],
+              const SizedBox(height: 16),
+              
+              // Game ID Input
+              TextField(
+                controller: gameIdCtrl,
+                style: TextStyle(color: isDark ? Colors.white : Colors.black87),
+                decoration: InputDecoration(
+                  labelText: 'Enter Game ID',
+                  labelStyle: TextStyle(color: Colors.grey[500]),
+                  filled: true,
+                  fillColor: isDark ? Colors.grey[800] : Colors.grey[100],
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
                   ),
-                ],
+                ),
               ),
-            ),
-          ],
+              const SizedBox(height: 12),
+              
+              // UTR Input
+              TextField(
+                controller: utrCtrl,
+                style: TextStyle(color: isDark ? Colors.white : Colors.black87),
+                decoration: InputDecoration(
+                  labelText: 'Enter 12-Digit UTR No.',
+                  labelStyle: TextStyle(color: Colors.grey[500]),
+                  filled: true,
+                  fillColor: isDark ? Colors.grey[800] : Colors.grey[100],
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
         actions: [
           TextButton(
@@ -1234,19 +604,33 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           ),
           ElevatedButton(
             onPressed: () {
+              if (gameIdCtrl.text.isEmpty || utrCtrl.text.isEmpty) {
+                _showSnackbar("Please fill both Game ID and UTR.");
+                return;
+              }
               Navigator.pop(context);
-              _processPopularityPayment(package);
+              
+              // Formatting WhatsApp Message
+              String msg = "🔥 *NEW POPULARITY ORDER* 🔥\n\n"
+                  "📦 *Item:* ${package.title}\n"
+                  "💎 *Popularity:* +${package.popularityAmount}\n"
+                  "💰 *Price:* ₹${package.price}\n"
+                  "🎮 *Game ID:* ${gameIdCtrl.text}\n"
+                  "✅ *UTR No:* ${utrCtrl.text}\n\n"
+                  "Please verify payment and send popularity.";
+                  
+              _sendToWhatsApp(msg);
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFE23E57),
               foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
             ),
             child: const Text(
-              'Pay & Add',
+              'Submit Payment',
               style: TextStyle(fontWeight: FontWeight.w800),
             ),
           ),
@@ -1255,59 +639,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     );
   }
 
-  Widget _detailRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            label,
-            style: TextStyle(
-              color: isDark ? Colors.grey[400] : Colors.grey[600],
-              fontSize: 13,
-            ),
-          ),
-          Text(
-            value,
-            style: TextStyle(
-              color: isDark ? Colors.white : Colors.black87,
-              fontWeight: FontWeight.w600,
-              fontSize: 14,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // UPDATED: Process Popularity and deduct Wallet
-  void _processPopularityPayment(PopularityPackage package) {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => const Center(
-        child: CircularProgressIndicator(color: Color(0xFFE23E57)),
-      ),
-    );
-
-    Future.delayed(const Duration(seconds: 1), () {
-      Navigator.pop(context); // Close loading
-
-      setState(() {
-        _walletBalance -= package.price;
-        _userPopularity += package.popularityAmount; // Add logic working now!
-      });
-
-      _showSnackbar('🎉 +${package.popularityAmount} Popularity Added!');
-    });
-  }
-
-  void _redeemExchange(PopularityExchange offer) {
-    if (offer.requiredPopularity > _userPopularity) {
-      _showSnackbar('Not enough popularity points!');
-      return;
-    }
+  // Method to Add Money to Wallet using UTR
+  void _showTopUpDialog() {
+    final TextEditingController amountCtrl = TextEditingController();
+    final TextEditingController utrCtrl = TextEditingController();
 
     showDialog(
       context: context,
@@ -1315,74 +650,82 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         backgroundColor: isDark ? Colors.grey[900] : Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text(
-          'Redeem ${offer.title}?',
+          'Add Money to Wallet',
           style: TextStyle(
             color: isDark ? Colors.white : Colors.black87,
             fontWeight: FontWeight.w800,
           ),
         ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              offer.description,
-              style: TextStyle(
-                color: isDark ? Colors.grey[400] : Colors.grey[600],
-                fontSize: 14,
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Send money to UPI: $adminUpiId and enter details to get wallet balance.',
+                style: TextStyle(color: isDark ? Colors.grey[400] : Colors.grey[700]),
               ),
-            ),
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: const Color(0xFF667eea).withOpacity(0.1),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Row(
-                children: [
-                  const Icon(CupertinoIcons.star_fill,
-                      color: Color(0xFFF9A826), size: 18),
-                  const SizedBox(width: 8),
-                  Text(
-                    '${offer.requiredPopularity} points will be deducted',
-                    style: TextStyle(
-                      color: isDark ? Colors.grey[300] : Colors.grey[700],
-                      fontWeight: FontWeight.w600,
-                    ),
+              const SizedBox(height: 16),
+              
+              TextField(
+                controller: amountCtrl,
+                keyboardType: TextInputType.number,
+                style: TextStyle(color: isDark ? Colors.white : Colors.black87),
+                decoration: InputDecoration(
+                  labelText: 'Amount Paid (₹)',
+                  filled: true,
+                  fillColor: isDark ? Colors.grey[800] : Colors.grey[100],
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
                   ),
-                ],
+                ),
               ),
-            ),
-          ],
+              const SizedBox(height: 12),
+              
+              TextField(
+                controller: utrCtrl,
+                style: TextStyle(color: isDark ? Colors.white : Colors.black87),
+                decoration: InputDecoration(
+                  labelText: 'Enter 12-Digit UTR',
+                  filled: true,
+                  fillColor: isDark ? Colors.grey[800] : Colors.grey[100],
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text(
-              'Cancel',
-              style: TextStyle(
-                color: isDark ? Colors.grey[400] : Colors.grey[600],
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+            child: const Text('Cancel'),
           ),
           ElevatedButton(
             onPressed: () {
+              if (amountCtrl.text.isEmpty || utrCtrl.text.isEmpty) {
+                _showSnackbar("Please fill all details.");
+                return;
+              }
               Navigator.pop(context);
-              setState(() {
-                _userPopularity -= offer.requiredPopularity;
-              });
-              _showSnackbar('✅ ${offer.reward} redeemed successfully!');
+              
+              // Formatting WhatsApp Message
+              String msg = "💳 *WALLET TOP-UP REQUEST* 💳\n\n"
+                  "💰 *Amount Sent:* ₹${amountCtrl.text}\n"
+                  "✅ *UTR No:* ${utrCtrl.text}\n\n"
+                  "Please verify payment and add to my wallet.";
+                  
+              _sendToWhatsApp(msg);
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF667eea),
+              backgroundColor: const Color(0xFFF9A826),
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
-            child: const Text('Confirm'),
+            child: const Text('Send Details', style: TextStyle(fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -1397,7 +740,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         margin: const EdgeInsets.all(16),
-        duration: const Duration(seconds: 2),
+        duration: const Duration(seconds: 3),
       ),
     );
   }
@@ -1409,6 +752,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     return Scaffold(
       backgroundColor: isDark ? Colors.grey[950] : Colors.grey[50],
       appBar: _buildAppBar(),
+      // Removed Bottom Navigation to keep the UI clean as requested.
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -1417,22 +761,20 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             children: [
               const SizedBox(height: 12),
               _buildPopularityCard(),
+              
               const SizedBox(height: 24),
-              _buildSectionTitle('🔥 Exchange Center', 'Rules'),
+              _buildSectionTitle('🎁 Buy Popularity'),
               const SizedBox(height: 12),
-              _buildExchangeOffers(),
-              const SizedBox(height: 24),
-              _buildSectionTitle('🎁 Buy Popularity', null),
-              const SizedBox(height: 12),
-              // RENDERING POPULARITY PACKAGES
               ..._popularityPackages
                   .map((package) => _buildPopularityPackageCard(package)),
-              const SizedBox(height: 30),
+                  
+              const SizedBox(height: 16),
+              _buildSupportCenter(),
+              const SizedBox(height: 40),
             ],
           ),
         ),
       ),
-      bottomNavigationBar: _buildBottomNav(),
     );
   }
 }
