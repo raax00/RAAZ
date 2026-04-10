@@ -1,3 +1,21 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    
+    <queries>
+        <package android:name="com.whatsapp" />
+        <package android:name="com.whatsapp.w4b" />
+    </queries>
+    <application
+        android:label="PopStore"
+        android:name="${applicationName}"
+        android:icon="@mipmap/ic_launcher">
+        ```
+
+---
+
+### 3. GitHub Actions Workflow ✅
+Aapka jo YAML file hai, usme `flutter create . --platforms=android` use kiya hai jo bilkul sahi approach hai missing files fix karne ke liye. Bas ek chhota sa update diya hai taaki build smoothly chale:
+
+```yaml
 name: Build Android APK
 
 on:
@@ -26,18 +44,18 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
+          cache: true
 
       - name: Install Dependencies
         run: flutter pub get
 
-      # YEH STEP ERROR KO FIX KAREGA (Missing Android files generate karega)
       - name: Repair and Create Android Files
         run: flutter create . --platforms=android
 
       - name: Build Android APK
         run: flutter build apk --release
 
-      - name: Upload APK so you can download it
+      - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: App-Release-APK
