@@ -164,7 +164,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   // ==================== UI BUILDERS ====================
 
-  Widget _buildAppBar() {
+  PreferredSizeWidget _buildAppBar() {
     return AppBar(
       backgroundColor: Colors.transparent,
       elevation: 0,
@@ -979,7 +979,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             children: [
               _navItem(0, CupertinoIcons.house, 'Home'),
               _navItem(1, CupertinoIcons.game_controller, 'Store'),
-              _navItem(2, CupertinoIcons.crown, 'Tournaments'), // Fixed: replaced trophy with crown
+              _navItem(2, Icons.emoji_events, 'Tournaments'), // FIXED: using Material Icons trophy
               _navItem(3, CupertinoIcons.person, 'Profile'),
             ],
           ),
@@ -1203,7 +1203,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     final transactions = [
       {'title': 'BGMI ID Purchase', 'amount': '-₹1,299', 'date': 'Today, 2:30 PM', 'icon': CupertinoIcons.game_controller},
       {'title': 'Wallet Top-up', 'amount': '+₹2,000', 'date': 'Yesterday, 11:15 AM', 'icon': CupertinoIcons.plus_circled},
-      {'title': 'Tournament Entry', 'amount': '-₹50', 'date': 'Dec 8, 4:20 PM', 'icon': CupertinoIcons.crown}, // Fixed: replaced trophy with crown
+      {'title': 'Tournament Entry', 'amount': '-₹50', 'date': 'Dec 8, 4:20 PM', 'icon': Icons.emoji_events}, // FIXED
     ];
 
     return transactions.map((tx) => Container(
@@ -1618,7 +1618,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
-                  CupertinoIcons.checkmark_circle, // Fixed: was checkmark_circled
+                  CupertinoIcons.checkmark_circle,
                   color: Colors.green,
                   size: 60,
                 ),
