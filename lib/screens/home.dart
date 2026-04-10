@@ -1,36 +1,37 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'dart:async';
+
+// NOTE: Apne hisaab se in imports ko adjust kar lena agar file path alag ho
 import '../main.dart';
 import 'settings.dart';
 import 'payment.dart';
 import 'book_details.dart';
 
 // ==================== MODELS ====================
-class GameItem {
+
+// 1. New Model For Popularity Items
+class PopularityPackage {
   final String id;
-  final String gameName;
-  final String characterName;
-  final String level;
-  final String skins;
-  final int popularity;
+  final String title;
+  final String description;
+  final int popularityAmount;
   final double price;
-  final String imageUrl;
+  final IconData icon;
   final bool isPremium;
 
-  GameItem({
+  PopularityPackage({
     required this.id,
-    required this.gameName,
-    required this.characterName,
-    required this.level,
-    required this.skins,
-    required this.popularity,
+    required this.title,
+    required this.description,
+    required this.popularityAmount,
     required this.price,
-    required this.imageUrl,
+    required this.icon,
     this.isPremium = false,
   });
 }
 
+// 2. Exchange Model (Kept as requested)
 class PopularityExchange {
   final String title;
   final String description;
@@ -65,39 +66,34 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   double _walletBalance = 1250.00;
   int _userPopularity = 3420;
 
-  final TextEditingController _gameIdController = TextEditingController();
+  final TextEditingController _searchController = TextEditingController();
 
-  final List<GameItem> _featuredGames = [
-    GameItem(
-      id: 'BGMI_7821',
-      gameName: 'BGMI',
-      characterName: 'ShadowKnight',
-      level: 'Level 68',
-      skins: '12 Legendary',
-      popularity: 8950,
-      price: 2499,
-      imageUrl: 'assets/bgmi_1.jpg',
+  // ONLY POPULARITY PACKAGES IN STORE
+  final List<PopularityPackage> _popularityPackages = [
+    PopularityPackage(
+      id: 'POP_BIKE',
+      title: 'Motorcycle',
+      description: 'Classic popularity booster',
+      popularityAmount: 200,
+      price: 49,
+      icon: Icons.two_wheeler,
+    ),
+    PopularityPackage(
+      id: 'POP_CAR',
+      title: 'Sports Car',
+      description: 'Premium ride for special friends',
+      popularityAmount: 1000,
+      price: 249,
+      icon: CupertinoIcons.car_detailed,
       isPremium: true,
     ),
-    GameItem(
-      id: 'BGMI_4512',
-      gameName: 'BGMI',
-      characterName: 'DragonSlayer',
-      level: 'Level 52',
-      skins: '8 Epic',
-      popularity: 5200,
-      price: 1299,
-      imageUrl: 'assets/bgmi_2.jpg',
-    ),
-    GameItem(
-      id: 'BGMI_9034',
-      gameName: 'BGMI',
-      characterName: 'NightHawk',
-      level: 'Level 71',
-      skins: '15 Legendary + M4 Glacier',
-      popularity: 12400,
-      price: 4999,
-      imageUrl: 'assets/bgmi_3.jpg',
+    PopularityPackage(
+      id: 'POP_PLANE',
+      title: 'Airplane',
+      description: 'The ultimate popularity flex',
+      popularityAmount: 5000,
+      price: 999,
+      icon: Icons.flight,
       isPremium: true,
     ),
   ];
@@ -156,7 +152,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   void dispose() {
     _fadeController.dispose();
     _slideController.dispose();
-    _gameIdController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -170,10 +166,13 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       elevation: 0,
       title: RichText(
         text: const TextSpan(
-          style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900, fontStyle: FontStyle.italic),
+          style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.w900,
+              fontStyle: FontStyle.italic),
           children: [
-            TextSpan(text: 'E-', style: TextStyle(color: Color(0xFFF9A826))),
-            TextSpan(text: 'SPORTS', style: TextStyle(color: Color(0xFFE23E57))),
+            TextSpan(text: 'POP', style: TextStyle(color: Color(0xFFF9A826))),
+            TextSpan(text: 'STORE', style: TextStyle(color: Color(0xFFE23E57))),
           ],
         ),
       ),
@@ -195,6 +194,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 activeColor: const Color(0xFFE23E57),
                 thumbColor: WidgetStateProperty.all(Colors.white),
                 onChanged: (value) {
+                  // Make sure themeNotifier & prefs exist in your main.dart
                   themeNotifier.value = value ? ThemeMode.dark : ThemeMode.light;
                   prefs.setBool('isDark', value);
                 },
@@ -211,7 +211,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             CupertinoPageRoute(builder: (_) => const SettingsPage()),
           ),
         ),
-        // Wallet & Profile
+        // Wallet
         GestureDetector(
           onTap: () => _showWalletBottomSheet(),
           child: Container(
@@ -277,19 +277,19 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         ],
       ),
       child: TextField(
-        controller: _gameIdController,
+        controller: _searchController,
         style: TextStyle(color: isDark ? Colors.white : Colors.black87),
         decoration: InputDecoration(
           prefixIcon: Icon(CupertinoIcons.search,
               color: isDark ? Colors.grey[400] : Colors.grey[600]),
-          suffixIcon: _gameIdController.text.isNotEmpty
+          suffixIcon: _searchController.text.isNotEmpty
               ? IconButton(
                   icon: Icon(CupertinoIcons.xmark_circle,
                       color: isDark ? Colors.grey[400] : Colors.grey[600]),
-                  onPressed: () => _gameIdController.clear(),
+                  onPressed: () => _searchController.clear(),
                 )
               : null,
-          hintText: 'Search Game ID, Player, Tournament...',
+          hintText: 'Search Popularity Items...',
           hintStyle: TextStyle(
             color: isDark ? Colors.grey[500] : Colors.grey[500],
             fontSize: 14,
@@ -297,7 +297,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(vertical: 16),
         ),
-        onSubmitted: (value) => _searchGameId(value),
       ),
     );
   }
@@ -328,7 +327,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               color: Colors.white.withOpacity(0.2),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(CupertinoIcons.star, color: Colors.amber, size: 28),
+            child: const Icon(CupertinoIcons.star_fill,
+                color: Colors.amber, size: 28),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -336,7 +336,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Your Popularity',
+                  'Your Total Popularity',
                   style: TextStyle(
                     color: Colors.white.withOpacity(0.9),
                     fontSize: 13,
@@ -356,13 +356,14 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     ),
                     const SizedBox(width: 8),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
                         color: Colors.white.withOpacity(0.2),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: const Text(
-                        '+120 today',
+                        'Growing 🔥',
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 11,
@@ -425,7 +426,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildGameCard(GameItem game) {
+  // UPDATED: Builds Popularity Package Card instead of Game ID
+  Widget _buildPopularityPackageCard(PopularityPackage package) {
     return FadeTransition(
       opacity: _fadeAnimation,
       child: SlideTransition(
@@ -447,198 +449,127 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
+                color: Colors.black.withOpacity(0.05),
                 blurRadius: 15,
                 offset: const Offset(0, 8),
               )
             ],
           ),
-          child: Stack(
-            children: [
-              // Background Image Overlay
-              ClipRRect(
-                borderRadius: BorderRadius.circular(20),
-                child: Container(
-                  height: 180,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                // Icon / Avatar
+                Container(
+                  height: 80,
+                  width: 80,
                   decoration: BoxDecoration(
-                    image: DecorationImage(
-                      image: AssetImage(game.imageUrl),
-                      fit: BoxFit.cover,
-                      opacity: 0.15,
+                    gradient: LinearGradient(
+                      colors: package.isPremium
+                          ? [Colors.amber.shade700, Colors.orange.shade600]
+                          : [Colors.blue.shade400, Colors.indigo.shade600],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
                     ),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Center(
+                    child: Icon(package.icon, size: 40, color: Colors.white),
                   ),
                 ),
-              ),
-              // Premium Badge
-              if (game.isPremium)
-                Positioned(
-                  top: 12,
-                  right: 12,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Colors.amber, Colors.orange],
+                const SizedBox(width: 16),
+                // Content
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            package.title,
+                            style: TextStyle(
+                              color: isDark ? Colors.white : Colors.black87,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                          if (package.isPremium)
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 3),
+                              decoration: BoxDecoration(
+                                color: Colors.amber.withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: const Text(
+                                'HOT',
+                                style: TextStyle(
+                                    color: Colors.amber,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                        ],
                       ),
-                      borderRadius: BorderRadius.circular(8),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.amber.withOpacity(0.4),
-                          blurRadius: 6,
-                          offset: const Offset(0, 3),
-                        )
-                      ],
-                    ),
-                    child: const Row(
-                      children: [
-                        Icon(CupertinoIcons.star, color: Colors.white, size: 12),
-                        SizedBox(width: 4),
-                        Text(
-                          'PREMIUM',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 10,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: 0.5,
-                          ),
+                      const SizedBox(height: 4),
+                      Text(
+                        package.description,
+                        style: TextStyle(
+                          color: isDark ? Colors.grey[400] : Colors.grey[600],
+                          fontSize: 12,
                         ),
-                      ],
-                    ),
-                  ),
-                ),
-              // Content
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Header
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              game.characterName,
-                              style: TextStyle(
-                                color: isDark ? Colors.white : Colors.black87,
-                                fontSize: 18,
-                                fontWeight: FontWeight.w800,
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              '${game.gameName} • ${game.level}',
-                              style: TextStyle(
-                                color: isDark ? Colors.grey[400] : Colors.grey[600],
-                                fontSize: 13,
-                              ),
-                            ),
-                          ],
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFE23E57).withOpacity(0.15),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Row(
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          // Popularity Amount
+                          Row(
                             children: [
-                              const Icon(CupertinoIcons.star,
-                                  color: Color(0xFFF9A826), size: 14),
+                              const Icon(CupertinoIcons.star_fill,
+                                  color: Color(0xFFF9A826), size: 16),
                               const SizedBox(width: 4),
                               Text(
-                                '${game.popularity}',
+                                '+${package.popularityAmount}',
                                 style: const TextStyle(
                                   color: Color(0xFFF9A826),
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 13,
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 16,
                                 ),
                               ),
                             ],
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    // Skins Info
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: isDark ? Colors.grey[800] : Colors.grey[100],
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(CupertinoIcons.briefcase,
-                              color: isDark ? Colors.grey[300] : Colors.grey[600], size: 16),
-                          const SizedBox(width: 8),
-                          Text(
-                            game.skins,
-                            style: TextStyle(
-                              color: isDark ? Colors.grey[300] : Colors.grey[700],
-                              fontSize: 13,
-                              fontWeight: FontWeight.w500,
+                          // Buy Button
+                          ElevatedButton(
+                            onPressed: () => _buyPopularityItem(package),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFFE23E57),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 8,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              elevation: 0,
+                            ),
+                            child: Text(
+                              '₹${package.price.toStringAsFixed(0)}',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w800,
+                                fontSize: 13,
+                              ),
                             ),
                           ),
                         ],
                       ),
-                    ),
-                    const Spacer(),
-                    // Price & Action
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Price',
-                              style: TextStyle(
-                                color: isDark ? Colors.grey[400] : Colors.grey[500],
-                                fontSize: 12,
-                              ),
-                            ),
-                            Text(
-                              '₹${game.price}',
-                              style: const TextStyle(
-                                color: Color(0xFFF9A826),
-                                fontSize: 20,
-                                fontWeight: FontWeight.w900,
-                              ),
-                            ),
-                          ],
-                        ),
-                        ElevatedButton(
-                          onPressed: () => _buyGameId(game),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFE23E57),
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 24,
-                              vertical: 12,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            elevation: 0,
-                          ),
-                          child: const Text(
-                            'BUY NOW',
-                            style: TextStyle(
-                              fontWeight: FontWeight.w800,
-                              fontSize: 13,
-                              letterSpacing: 0.5,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -709,7 +640,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   const Spacer(),
                   Row(
                     children: [
-                      const Icon(CupertinoIcons.star,
+                      const Icon(CupertinoIcons.star_fill,
                           color: Color(0xFFF9A826), size: 12),
                       const SizedBox(width: 4),
                       Text(
@@ -727,232 +658,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             ),
           );
         },
-      ),
-    );
-  }
-
-  Widget _buildTournamentCard() {
-    return GestureDetector(
-      onTap: () => Navigator.push(
-        context,
-        CupertinoPageRoute(builder: (_) => const BookDetailsPage()),
-      ),
-      child: Container(
-        height: 220,
-        width: double.infinity,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(24),
-          gradient: const LinearGradient(
-            colors: [Color(0xFF1a1a2e), Color(0xFF16213e), Color(0xFF0f3460)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFFE23E57).withOpacity(0.3),
-              blurRadius: 20,
-              offset: const Offset(0, 10),
-            )
-          ],
-        ),
-        child: Stack(
-          children: [
-            // Decorative Background Elements
-            Positioned(
-              right: -30,
-              top: -30,
-              child: Container(
-                width: 100,
-                height: 100,
-                decoration: BoxDecoration(
-                  gradient: RadialGradient(
-                    colors: [
-                      const Color(0xFFF9A826).withOpacity(0.3),
-                      Colors.transparent,
-                    ],
-                  ),
-                  shape: BoxShape.circle,
-                ),
-              ),
-            ),
-            // Prize Pool
-            const Positioned(
-              top: 20,
-              left: 20,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "PRIZE POOL",
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white70,
-                      letterSpacing: 1.5,
-                    ),
-                  ),
-                  SizedBox(height: 4),
-                  Text(
-                    "₹5,000",
-                    style: TextStyle(
-                      fontSize: 36,
-                      fontWeight: FontWeight.w900,
-                      color: Colors.white,
-                      height: 1,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            // Entry Badge
-            Positioned(
-              top: 20,
-              right: 20,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Colors.redAccent, Colors.pinkAccent],
-                  ),
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.redAccent.withOpacity(0.4),
-                      blurRadius: 8,
-                      offset: const Offset(0, 4),
-                    )
-                  ],
-                ),
-                child: const Text(
-                  'Entry: ₹50',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w800,
-                    fontSize: 13,
-                  ),
-                ),
-              ),
-            ),
-            // Game Info
-            Positioned(
-              bottom: 60,
-              left: 20,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.15),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Text(
-                      'Erangel Squad (T3)',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: Colors.green.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Row(
-                          children: [
-                            const Icon(CupertinoIcons.checkmark_circle,
-                                color: Colors.green, size: 12),
-                            const SizedBox(width: 4),
-                            const Text(
-                              'Open',
-                              style: TextStyle(
-                                color: Colors.green,
-                                fontSize: 11,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        '50/100 Joined',
-                        style: TextStyle(
-                          color: Colors.white.withOpacity(0.8),
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            // Timer & Join Button
-            Positioned(
-              bottom: 20,
-              left: 20,
-              right: 20,
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(CupertinoIcons.time,
-                            color: Colors.white.withOpacity(0.9), size: 16),
-                        const SizedBox(width: 6),
-                        Text(
-                          '02:45:00',
-                          style: TextStyle(
-                            color: Colors.white.withOpacity(0.9),
-                            fontWeight: FontWeight.w700,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const Spacer(),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFFF9A826), Color(0xFFE23E57)],
-                      ),
-                      borderRadius: BorderRadius.circular(14),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFFE23E57).withOpacity(0.4),
-                          blurRadius: 10,
-                          offset: const Offset(0, 5),
-                        )
-                      ],
-                    ),
-                    child: const Text(
-                      'JOIN NOW →',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w900,
-                        fontSize: 13,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -978,8 +683,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               _navItem(0, CupertinoIcons.house, 'Home'),
-              _navItem(1, CupertinoIcons.game_controller, 'Store'),
-              _navItem(2, Icons.emoji_events, 'Tournaments'), // FIXED: using Material Icons trophy
+              _navItem(1, CupertinoIcons.gift, 'Store'),
+              _navItem(2, Icons.emoji_events, 'Battles'),
               _navItem(3, CupertinoIcons.person, 'Profile'),
             ],
           ),
@@ -1046,7 +751,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Handle
               Center(
                 child: Container(
                   width: 40,
@@ -1058,7 +762,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   ),
                 ),
               ),
-              // Header
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -1078,7 +781,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 ],
               ),
               const SizedBox(height: 20),
-              // Balance Card
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(20),
@@ -1110,7 +812,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 ),
               ),
               const SizedBox(height: 24),
-              // Actions
               Row(
                 children: [
                   Expanded(
@@ -1122,18 +823,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         Navigator.pop(context);
                         Navigator.push(
                           context,
-                          CupertinoPageRoute(builder: (_) => const PaymentPage()),
+                          CupertinoPageRoute(
+                              builder: (_) => const PaymentPage()),
                         );
                       },
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _walletActionButton(
-                      icon: CupertinoIcons.arrow_up_circle,
-                      label: 'Withdraw',
-                      color: const Color(0xFFE23E57),
-                      onTap: () => _showSnackbar('Withdraw coming soon!'),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -1142,13 +835,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       icon: CupertinoIcons.clock,
                       label: 'History',
                       color: Colors.grey[600]!,
-                      onTap: () => _showTransactionHistory(),
+                      onTap: () => _showSnackbar('History opening soon'),
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 24),
-              // Recent Transactions
               Text(
                 'Recent Transactions',
                 style: TextStyle(
@@ -1201,9 +893,18 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   List<Widget> _buildTransactionItems() {
     final transactions = [
-      {'title': 'BGMI ID Purchase', 'amount': '-₹1,299', 'date': 'Today, 2:30 PM', 'icon': CupertinoIcons.game_controller},
-      {'title': 'Wallet Top-up', 'amount': '+₹2,000', 'date': 'Yesterday, 11:15 AM', 'icon': CupertinoIcons.plus_circled},
-      {'title': 'Tournament Entry', 'amount': '-₹50', 'date': 'Dec 8, 4:20 PM', 'icon': Icons.emoji_events}, // FIXED
+      {
+        'title': 'Sports Car Pop',
+        'amount': '-₹249',
+        'date': 'Today, 2:30 PM',
+        'icon': CupertinoIcons.gift
+      },
+      {
+        'title': 'Wallet Top-up',
+        'amount': '+₹1,000',
+        'date': 'Yesterday, 11:15 AM',
+        'icon': CupertinoIcons.plus_circled
+      },
     ];
 
     return transactions.map((tx) => Container(
@@ -1311,7 +1012,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               ),
             ),
             const SizedBox(height: 20),
-            // Current Points
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(16),
@@ -1324,7 +1024,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(CupertinoIcons.star, color: Colors.amber, size: 24),
+                  const Icon(CupertinoIcons.star_fill,
+                      color: Colors.amber, size: 24),
                   const SizedBox(width: 8),
                   Text(
                     '$_userPopularity Points Available',
@@ -1338,7 +1039,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               ),
             ),
             const SizedBox(height: 20),
-            // Exchange Offers List
             ..._exchangeOffers.map((offer) => Container(
               margin: const EdgeInsets.only(bottom: 12),
               padding: const EdgeInsets.all(16),
@@ -1359,7 +1059,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       color: const Color(0xFF667eea).withOpacity(0.15),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Icon(offer.icon, color: const Color(0xFF667eea), size: 24),
+                    child: Icon(offer.icon,
+                        color: const Color(0xFF667eea), size: 24),
                   ),
                   const SizedBox(width: 14),
                   Expanded(
@@ -1390,7 +1091,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     children: [
                       Row(
                         children: [
-                          const Icon(CupertinoIcons.star,
+                          const Icon(CupertinoIcons.star_fill,
                               color: Color(0xFFF9A826), size: 14),
                           const SizedBox(width: 4),
                           Text(
@@ -1410,9 +1111,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                               ? () => _redeemExchange(offer)
                               : null,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: offer.requiredPopularity <= _userPopularity
-                                ? const Color(0xFF667eea)
-                                : Colors.grey[400],
+                            backgroundColor:
+                                offer.requiredPopularity <= _userPopularity
+                                    ? const Color(0xFF667eea)
+                                    : Colors.grey[400],
                             foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(vertical: 8),
                             shape: RoundedRectangleBorder(
@@ -1422,7 +1124,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                           ),
                           child: const Text(
                             'Redeem',
-                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                            style: TextStyle(
+                                fontSize: 12, fontWeight: FontWeight.w600),
                           ),
                         ),
                       ),
@@ -1438,7 +1141,13 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     );
   }
 
-  void _buyGameId(GameItem game) {
+  // UPDATED: Dynamic Logic to Buy Popularity
+  void _buyPopularityItem(PopularityPackage package) {
+    if (_walletBalance < package.price) {
+      _showSnackbar('Insufficient wallet balance!');
+      return;
+    }
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -1452,13 +1161,13 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 color: const Color(0xFFE23E57).withOpacity(0.15),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: const Icon(CupertinoIcons.game_controller,
+              child: const Icon(CupertinoIcons.star_fill,
                   color: Color(0xFFE23E57), size: 24),
             ),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
-                'Confirm Purchase',
+                'Buy Popularity',
                 style: TextStyle(
                   color: isDark ? Colors.white : Colors.black87,
                   fontWeight: FontWeight.w800,
@@ -1467,59 +1176,50 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             ),
           ],
         ),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: isDark ? Colors.grey[800] : Colors.grey[50],
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _detailRow('Game ID', game.id),
-                    _detailRow('Character', game.characterName),
-                    _detailRow('Level', game.level),
-                    _detailRow('Skins', game.skins),
-                    _detailRow('Popularity', '${game.popularity} ⭐'),
-                    const Divider(height: 24),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Total Amount',
-                          style: TextStyle(
-                            color: isDark ? Colors.grey[300] : Colors.grey[700],
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        Text(
-                          '₹${game.price}',
-                          style: const TextStyle(
-                            color: Color(0xFFF9A826),
-                            fontWeight: FontWeight.w900,
-                            fontSize: 20,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Are you sure you want to purchase ${package.title}?',
+              style: TextStyle(color: isDark ? Colors.grey[300] : Colors.black87),
+            ),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: isDark ? Colors.grey[800] : Colors.grey[50],
+                borderRadius: BorderRadius.circular(14),
               ),
-              const SizedBox(height: 16),
-              Text(
-                '⚠️ This is a one-time purchase. Game ID credentials will be sent to your registered email after successful payment.',
-                style: TextStyle(
-                  color: isDark ? Colors.grey[400] : Colors.grey[600],
-                  fontSize: 12,
-                ),
+              child: Column(
+                children: [
+                  _detailRow('Item', package.title),
+                  _detailRow('Popularity Gain', '+${package.popularityAmount}'),
+                  const Divider(height: 24),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Total Deducted',
+                        style: TextStyle(
+                          color: isDark ? Colors.grey[300] : Colors.grey[700],
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      Text(
+                        '₹${package.price}',
+                        style: const TextStyle(
+                          color: Color(0xFFE23E57),
+                          fontWeight: FontWeight.w900,
+                          fontSize: 20,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
         actions: [
           TextButton(
@@ -1535,7 +1235,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
-              _processPayment(game);
+              _processPopularityPayment(package);
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFE23E57),
@@ -1546,7 +1246,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               ),
             ),
             child: const Text(
-              'Pay & Buy',
+              'Pay & Add',
               style: TextStyle(fontWeight: FontWeight.w800),
             ),
           ),
@@ -1581,8 +1281,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     );
   }
 
-  void _processPayment(GameItem game) {
-    // Show loading
+  // UPDATED: Process Popularity and deduct Wallet
+  void _processPopularityPayment(PopularityPackage package) {
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -1591,82 +1291,15 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       ),
     );
 
-    // Simulate payment processing
-    Future.delayed(const Duration(seconds: 2), () {
+    Future.delayed(const Duration(seconds: 1), () {
       Navigator.pop(context); // Close loading
 
-      // Update wallet
       setState(() {
-        _walletBalance -= game.price;
-        _userPopularity += 50; // Bonus popularity on purchase
+        _walletBalance -= package.price;
+        _userPopularity += package.popularityAmount; // Add logic working now!
       });
 
-      // Show success
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          backgroundColor: isDark ? Colors.grey[900] : Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          contentPadding: const EdgeInsets.all(24),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.green.withOpacity(0.15),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  CupertinoIcons.checkmark_circle,
-                  color: Colors.green,
-                  size: 60,
-                ),
-              ),
-              const SizedBox(height: 20),
-              Text(
-                'Purchase Successful! 🎉',
-                style: TextStyle(
-                  color: isDark ? Colors.white : Colors.black87,
-                  fontSize: 20,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'Game ID: ${game.id}\n\nCredentials have been sent to your registered email address.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: isDark ? Colors.grey[400] : Colors.grey[600],
-                  fontSize: 14,
-                ),
-              ),
-              const SizedBox(height: 20),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    Navigator.pop(context);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF667eea),
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: const Text(
-                    'View My IDs',
-                    style: TextStyle(fontWeight: FontWeight.w700),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
+      _showSnackbar('🎉 +${package.popularityAmount} Popularity Added!');
     });
   }
 
@@ -1708,7 +1341,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               ),
               child: Row(
                 children: [
-                  const Icon(CupertinoIcons.star, color: Color(0xFFF9A826), size: 18),
+                  const Icon(CupertinoIcons.star_fill,
+                      color: Color(0xFFF9A826), size: 18),
                   const SizedBox(width: 8),
                   Text(
                     '${offer.requiredPopularity} points will be deducted',
@@ -1755,19 +1389,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     );
   }
 
-  void _searchGameId(String query) {
-    if (query.isEmpty) return;
-    _showSnackbar('Searching for: "$query"...');
-  }
-
-  void _showTransactionHistory() {
-    _showSnackbar('Transaction history feature coming soon!');
-  }
-
   void _showSnackbar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message),
+        content: Text(message, style: const TextStyle(fontWeight: FontWeight.bold)),
         backgroundColor: isDark ? Colors.grey[800] : Colors.grey[900],
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -1791,21 +1416,17 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 12),
-              _buildSearchBar(),
-              const SizedBox(height: 20),
               _buildPopularityCard(),
               const SizedBox(height: 24),
-              _buildSectionTitle('🎮 Gaming Store', 'See All'),
+              _buildSectionTitle('🔥 Exchange Center', 'Rules'),
               const SizedBox(height: 12),
               _buildExchangeOffers(),
               const SizedBox(height: 24),
-              _buildSectionTitle('🔥 Featured Game IDs', null),
+              _buildSectionTitle('🎁 Buy Popularity', null),
               const SizedBox(height: 12),
-              ..._featuredGames.map((game) => _buildGameCard(game)),
-              const SizedBox(height: 20),
-              _buildSectionTitle('🏆 Upcoming Tournaments', 'See All'),
-              const SizedBox(height: 12),
-              _buildTournamentCard(),
+              // RENDERING POPULARITY PACKAGES
+              ..._popularityPackages
+                  .map((package) => _buildPopularityPackageCard(package)),
               const SizedBox(height: 30),
             ],
           ),
