@@ -1,42 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-// NOTE: Apni paths ke hisab se adjust kar lein
-import '../main.dart'; // Make sure themeNotifier is defined here
-import 'payment.dart'; // Aapka payment screen
+import '../models/popularity_package.dart';
+import '../utils/theme_notifier.dart';
+import 'checkout_screen.dart';
 
-// ==================== MODELS ====================
-
-class PopularityPackage {
-  final String id;
-  final String title;
-  final String description;
-  final int popularityAmount;
-  final double price;
-  final IconData icon;
-  final bool isPremium;
-
-  PopularityPackage({
-    required this.id,
-    required this.title,
-    required this.description,
-    required this.popularityAmount,
-    required this.price,
-    required this.icon,
-    this.isPremium = false,
-  });
-}
-
-// ==================== HOME PAGE ====================
-class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
+class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   late AnimationController _fadeController;
   late AnimationController _slideController;
   late Animation<double> _fadeAnimation;
@@ -45,11 +23,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   final double _walletBalance = 0.00;
   final int _userPopularity = 3420;
 
-  // Admin Details for Support
-  final String adminPhone = "918406962570";
-  final String adminEmail = "raaxbhaii@gmail.com";
+  // Admin contact details
+  static const String adminPhone = "918406962570";
+  static const String adminEmail = "raaxbhaii@gmail.com";
 
-  final List<PopularityPackage> _popularityPackages = [
+  final List<PopularityPackage> _popularityPackages = const [
     PopularityPackage(
       id: 'POP_BIKE',
       title: 'Motorcycle',
@@ -113,7 +91,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   bool get isDark => Theme.of(context).brightness == Brightness.dark;
 
-  // ==================== WHATSAPP LAUNCHER ====================
+  // ==================== WhatsApp Launcher ====================
   Future<void> _sendToWhatsApp(String message) async {
     final String encodedMessage = Uri.encodeComponent(message);
     final Uri url = Uri.parse('https://wa.me/$adminPhone?text=$encodedMessage');
@@ -139,18 +117,18 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     );
   }
 
-  // ==================== UI BUILDERS ====================
-
-  PreferredSizeWidget _buildAppBar() {
+  // ==================== UI Builders ====================
+  PreferredSizeWidget _buildAppBar(ThemeNotifier themeNotifier) {
     return AppBar(
       backgroundColor: Colors.transparent,
       elevation: 0,
-      title: RichText(
-        text: const TextSpan(
+      title: const Text.rich(
+        TextSpan(
           style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.w900,
-              fontStyle: FontStyle.italic),
+            fontSize: 24,
+            fontWeight: FontWeight.w900,
+            fontStyle: FontStyle.italic,
+          ),
           children: [
             TextSpan(text: 'POP', style: TextStyle(color: Color(0xFFF9A826))),
             TextSpan(text: 'STORE', style: TextStyle(color: Color(0xFFE23E57))),
@@ -158,7 +136,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         ),
       ),
       actions: [
-        // Dark/Light Theme Switch
+        // Theme Toggle
         Container(
           margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
           decoration: BoxDecoration(
@@ -168,21 +146,21 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           child: Row(
             children: [
               const SizedBox(width: 8),
-              Icon(isDark ? CupertinoIcons.moon_fill : CupertinoIcons.sun_max_fill,
-                  color: isDark ? Colors.amber : Colors.orange, size: 16),
+              Icon(
+                isDark ? CupertinoIcons.moon_fill : CupertinoIcons.sun_max_fill,
+                color: isDark ? Colors.amber : Colors.orange,
+                size: 16,
+              ),
               Switch(
                 value: isDark,
                 activeColor: const Color(0xFFE23E57),
                 materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                onChanged: (value) {
-                  // Apne main.dart ke hisab se ise adjust karein
-                  themeNotifier.value = value ? ThemeMode.dark : ThemeMode.light;
-                },
+                onChanged: (_) => themeNotifier.toggleTheme(),
               ),
             ],
           ),
         ),
-        // Wallet Button
+        // Wallet Balance
         Container(
           margin: const EdgeInsets.only(right: 16, top: 10, bottom: 10),
           padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -279,13 +257,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           margin: const EdgeInsets.only(bottom: 16),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20),
-            gradient: LinearGradient(
-              colors: isDark
-                  ? [Colors.grey[900]!, Colors.grey[850]!]
-                  : [Colors.white, Colors.grey[50]!],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
+            color: isDark ? Colors.grey[900] : Colors.white,
             border: Border.all(
               color: isDark ? Colors.grey[800]! : Colors.grey[200]!,
               width: 1.5,
@@ -302,7 +274,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             padding: const EdgeInsets.all(16),
             child: Row(
               children: [
-                // Icon
+                // Icon Container
                 Container(
                   height: 80,
                   width: 80,
@@ -316,9 +288,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     ),
                     borderRadius: BorderRadius.circular(16),
                   ),
-                  child: Center(
-                    child: Icon(package.icon, size: 40, color: Colors.white),
-                  ),
+                  child: Icon(package.icon, size: 40, color: Colors.white),
                 ),
                 const SizedBox(width: 16),
                 // Content
@@ -361,13 +331,13 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                               ),
                             ],
                           ),
-                          // BUY BUTTON -> GOES TO CHECKOUT PAGE
+                          // Buy Button
                           ElevatedButton(
                             onPressed: () {
                               Navigator.push(
                                 context,
                                 CupertinoPageRoute(
-                                  builder: (context) => CheckoutPage(package: package),
+                                  builder: (_) => CheckoutScreen(package: package),
                                 ),
                               );
                             },
@@ -451,7 +421,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             color: isDark ? Colors.white10 : Colors.black.withOpacity(0.05),
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Icon(icon, color: isLink ? Colors.green : (isDark ? Colors.grey[400] : Colors.grey[700]), size: 18),
+          child: Icon(
+            icon,
+            color: isLink ? Colors.green : (isDark ? Colors.grey[400] : Colors.grey[700]),
+            size: 18,
+          ),
         ),
         const SizedBox(width: 12),
         Column(
@@ -477,9 +451,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    final themeNotifier = Provider.of<ThemeNotifier>(context);
     return Scaffold(
       backgroundColor: isDark ? Colors.grey[950] : Colors.grey[50],
-      appBar: _buildAppBar(),
+      appBar: _buildAppBar(themeNotifier),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -504,146 +479,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 ],
               ),
               const SizedBox(height: 16),
-              ..._popularityPackages.map((package) => _buildPopularityPackageCard(package)),
+              ..._popularityPackages.map(_buildPopularityPackageCard),
               const SizedBox(height: 16),
               _buildSupportCenter(),
               const SizedBox(height: 40),
             ],
           ),
-        ),
-      ),
-    );
-  }
-}
-
-// ==================== CHECKOUT PAGE (PAY PAGE) ====================
-class CheckoutPage extends StatefulWidget {
-  final PopularityPackage package;
-
-  const CheckoutPage({super.key, required this.package});
-
-  @override
-  State<CheckoutPage> createState() => _CheckoutPageState();
-}
-
-class _CheckoutPageState extends State<CheckoutPage> {
-  final TextEditingController _gameIdController = TextEditingController();
-  final TextEditingController _characterNameController = TextEditingController();
-
-  bool get isDark => Theme.of(context).brightness == Brightness.dark;
-
-  @override
-  void dispose() {
-    _gameIdController.dispose();
-    _characterNameController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: isDark ? Colors.grey[950] : Colors.grey[50],
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        iconTheme: IconThemeData(color: isDark ? Colors.white : Colors.black),
-        title: Text(
-          'Enter Details',
-          style: TextStyle(color: isDark ? Colors.white : Colors.black, fontWeight: FontWeight.w800),
-        ),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Selected Item Summary
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: isDark ? Colors.grey[900] : Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: isDark ? Colors.grey[800]! : Colors.grey[200]!),
-              ),
-              child: Row(
-                children: [
-                  Icon(widget.package.icon, size: 30, color: const Color(0xFF667eea)),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(widget.package.title, style: TextStyle(color: isDark ? Colors.white : Colors.black87, fontWeight: FontWeight.bold, fontSize: 16)),
-                        Text('+${widget.package.popularityAmount} Popularity', style: const TextStyle(color: Color(0xFFF9A826), fontWeight: FontWeight.w600)),
-                      ],
-                    ),
-                  ),
-                  Text('₹${widget.package.price}', style: const TextStyle(color: Color(0xFFE23E57), fontWeight: FontWeight.w900, fontSize: 18)),
-                ],
-              ),
-            ),
-            const SizedBox(height: 30),
-            
-            Text('Player Information', style: TextStyle(color: isDark ? Colors.white : Colors.black87, fontSize: 16, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 12),
-            
-            // Game ID Input
-            TextField(
-              controller: _gameIdController,
-              keyboardType: TextInputType.number,
-              style: TextStyle(color: isDark ? Colors.white : Colors.black),
-              decoration: InputDecoration(
-                labelText: 'Enter BGMI / PUBG Game ID',
-                prefixIcon: const Icon(CupertinoIcons.game_controller),
-                filled: true,
-                fillColor: isDark ? Colors.grey[900] : Colors.white,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // Character Name Input
-            TextField(
-              controller: _characterNameController,
-              style: TextStyle(color: isDark ? Colors.white : Colors.black),
-              decoration: InputDecoration(
-                labelText: 'Enter Character Name (Optional)',
-                prefixIcon: const Icon(CupertinoIcons.person),
-                filled: true,
-                fillColor: isDark ? Colors.grey[900] : Colors.white,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-              ),
-            ),
-            
-            const SizedBox(height: 40),
-
-            // Proceed Button -> Goes to payment.dart
-            SizedBox(
-              width: double.infinity,
-              height: 55,
-              child: ElevatedButton(
-                onPressed: () {
-                  if (_gameIdController.text.isEmpty) {
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please enter Game ID')));
-                    return;
-                  }
-                  
-                  // Yahan se aapke payment.dart screen par jayega
-                  Navigator.push(
-                    context,
-                    CupertinoPageRoute(
-                      builder: (context) => const PaymentPage(), // Aapka payment screen
-                    ),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFE23E57),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                ),
-                child: const Text('Proceed to Payment', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
-              ),
-            ),
-          ],
         ),
       ),
     );
