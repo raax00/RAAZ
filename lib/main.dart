@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'screens/home.dart';
+import 'screens/home_screen.dart';
 import 'utils/theme_notifier.dart';
 
 void main() => runApp(const MyApp());
@@ -16,18 +16,22 @@ class MyApp extends StatelessWidget {
       create: (_) => ThemeNotifier(),
       child: Consumer<ThemeNotifier>(
         builder: (context, themeNotifier, child) {
-          return CupertinoApp(
+          return MaterialApp(
             title: 'PopStore',
             debugShowCheckedModeBanner: false,
-            theme: const CupertinoThemeData(
-              brightness: Brightness.light,
-              primaryColor: Color(0xFFE23E57),
-              scaffoldBackgroundColor: CupertinoColors.lightBackgroundGray,
+            theme: ThemeData.light().copyWith(
+              cupertinoOverrideTheme: const CupertinoThemeData(
+                brightness: Brightness.light,
+                primaryColor: Color(0xFFE23E57),
+                scaffoldBackgroundColor: CupertinoColors.lightBackgroundGray,
+              ),
             ),
-            darkTheme: const CupertinoThemeData(
-              brightness: Brightness.dark,
-              primaryColor: Color(0xFFE23E57),
-              scaffoldBackgroundColor: CupertinoColors.darkBackgroundGray,
+            darkTheme: ThemeData.dark().copyWith(
+              cupertinoOverrideTheme: const CupertinoThemeData(
+                brightness: Brightness.dark,
+                primaryColor: Color(0xFFE23E57),
+                scaffoldBackgroundColor: CupertinoColors.darkBackgroundGray,
+              ),
             ),
             themeMode: themeNotifier.themeMode,
             home: const HomeScreen(),
