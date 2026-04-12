@@ -1,12 +1,11 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'screens/home_screen.dart';
+import 'screens/home.dart';
 import 'utils/theme_notifier.dart';
 
-void main() {
-  runApp(const MyApp());
-}
+void main() => runApp(const MyApp());
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -17,50 +16,18 @@ class MyApp extends StatelessWidget {
       create: (_) => ThemeNotifier(),
       child: Consumer<ThemeNotifier>(
         builder: (context, themeNotifier, child) {
-          return MaterialApp(
+          return CupertinoApp(
             title: 'PopStore',
             debugShowCheckedModeBanner: false,
-            theme: ThemeData.light().copyWith(
-              primaryColor: const Color(0xFFE23E57),
-              colorScheme: const ColorScheme.light(
-                primary: Color(0xFFE23E57),
-                secondary: Color(0xFFF9A826),
-              ),
-              scaffoldBackgroundColor: Colors.grey[50],
-              appBarTheme: const AppBarTheme(
-                backgroundColor: Colors.transparent,
-                elevation: 0,
-                iconTheme: IconThemeData(color: Colors.black),
-              ),
-              inputDecorationTheme: InputDecorationTheme(
-                filled: true,
-                fillColor: Colors.white,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
-                ),
-              ),
+            theme: const CupertinoThemeData(
+              brightness: Brightness.light,
+              primaryColor: Color(0xFFE23E57),
+              scaffoldBackgroundColor: CupertinoColors.lightBackgroundGray,
             ),
-            darkTheme: ThemeData.dark().copyWith(
-              primaryColor: const Color(0xFFE23E57),
-              colorScheme: const ColorScheme.dark(
-                primary: Color(0xFFE23E57),
-                secondary: Color(0xFFF9A826),
-              ),
-              scaffoldBackgroundColor: Colors.grey[950],
-              appBarTheme: const AppBarTheme(
-                backgroundColor: Colors.transparent,
-                elevation: 0,
-                iconTheme: IconThemeData(color: Colors.white),
-              ),
-              inputDecorationTheme: InputDecorationTheme(
-                filled: true,
-                fillColor: Colors.grey[900],
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
-                ),
-              ),
+            darkTheme: const CupertinoThemeData(
+              brightness: Brightness.dark,
+              primaryColor: Color(0xFFE23E57),
+              scaffoldBackgroundColor: CupertinoColors.darkBackgroundGray,
             ),
             themeMode: themeNotifier.themeMode,
             home: const HomeScreen(),
