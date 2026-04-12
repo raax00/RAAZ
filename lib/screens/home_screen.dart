@@ -33,7 +33,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       description: 'Classic popularity booster',
       popularityAmount: 200,
       price: 49,
-      icon: CupertinoIcons.bicycle,
+      icon: Icons.two_wheeler, // FIXED: CupertinoIcons.bicycle does not exist
     ),
     PopularityPackage(
       id: 'POP_CAR',
@@ -97,7 +97,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-  PreferredSizeWidget _buildAppBar(ThemeNotifier themeNotifier) {
+  // FIXED: Return type changed to ObstructingPreferredSizeWidget
+  ObstructingPreferredSizeWidget _buildAppBar(ThemeNotifier themeNotifier) {
     return CupertinoNavigationBar(
       backgroundColor: isDark ? CupertinoColors.darkBackgroundGray : CupertinoColors.lightBackgroundGray,
       border: null,
